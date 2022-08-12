@@ -5,14 +5,13 @@ import os
 import re
 import click
 
-def merge_files(file_name="total_info.csv"):
+def merge_files(DIR, file_name="total_info.tsv"):
     """
     This methods merges the download .tsv file with the metadata .tsv file by sample id.
-    Saves it into a file called total_info.csv if not named otherwise
+    Saves it into a file called total_info.tsv if not named otherwise
     """
 
-    DIR = "../example_data"
-
+    # TODO change this to be parameter
     metadata_regex = re.compile(r'hmp_manifest_metadata_(.*).tsv')  # match hmp_manifest_metadata_*.tsv files
     download_regex = re.compile(r'hmp_manifest_(?!metadata)')  # match hmp_manifest_*.tsv files
 
@@ -42,12 +41,12 @@ def merge_files(file_name="total_info.csv"):
 
 def get_merge_file():
     # Create .csv file with information about samples
-    if not os.path.exists("total_info.csv"):
+    if not os.path.exists("total_info.tsv"):
         print("Merging files...")
         total = merge_files()
     else:
-        print("total_info.csv already exists")
-        total = pd.read_csv("total_info.csv")
+        print("total_info.tsv already exists")
+        total = pd.read_csv("total_info.tsv")
 
     return total
 
@@ -91,7 +90,7 @@ def create_folders():
                 print("Created folder : ", metafiledir)
 
 
-def export_all(numvisit = 2):
+def export_all(numvisit: int):
     """
     Exports all visits separately for each body site. The final .tsv files are saved in folders
     with names ./download/<body_site>_<study_name> and ./metadata/<body_site>_<body_site>_<study_name>_metadata
