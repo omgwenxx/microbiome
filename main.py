@@ -64,6 +64,17 @@ def extract(data_dir: str = typer.Argument(..., help='Folder with downloaded fil
         unpack_tar(body_study_dir)
         unpack_gz(body_study_dir)
 
+@app.command()
+def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files')) -> None:
+    """
+    Cleans all body site data folders of .tar and .gz files.
+    :return:
+    """
+    for folder in os.listdir(data_dir):
+        print("Cleaning files from:", folder)
+        body_study_dir = os.path.join(data_dir, folder)
+        clean_folder(body_study_dir)
+        break
 
 if __name__ == "__main__":
     # app() # uncomment to use cli interface
