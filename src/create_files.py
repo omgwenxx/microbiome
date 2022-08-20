@@ -1,9 +1,7 @@
-import csv
 import pandas as pd
-import numpy as np
 import os
 import re
-import click
+
 
 def merge_files(DIR, file_name="total_info.tsv"):
     """
@@ -100,6 +98,7 @@ def export_all(numvisit: int):
     total = get_merge_file()
     downloaddir = "./download"
     metadatadir = "./metadata"
+
     # extract body sites and study names
     body_sites = total['sample_body_site'].unique()
     study_names = total['study_full_name'].unique()
