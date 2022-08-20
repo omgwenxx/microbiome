@@ -1,12 +1,14 @@
 import typer
 from src.create_files import *
 from src.download_files import *
+from src.util import *
 
 app = typer.Typer()
 
+
 @app.command()
 def create(input_dir: str = typer.Argument(..., help='Folder with files containing download and metadata information'),
-           num_visits: int = typer.Argument(2, help='Number of visits to download')) -> None:
+           num_visits: int = 2) -> None:
     """
     Creates folder with files per body site and visit for downloading and metadata.
     :param num_visits:
@@ -15,8 +17,10 @@ def create(input_dir: str = typer.Argument(..., help='Folder with files containi
     """
     merge_files(input_dir)
     create_folders()
+    print(f"\nCreating files for {num_visits} visits")
     export_all(num_visits)
     print("Done creating folders and files for download.")
+
 
 @app.command()
 def download(download_dir: str = typer.Argument(..., help='Folder with files containing download information')) -> None:
@@ -25,7 +29,7 @@ def download(download_dir: str = typer.Argument(..., help='Folder with files con
     :param download_dir: Folder with files containing download information
     :return:
     """
-    first_folder = True # for formatting console output
+    first_folder = True  # for formatting console output
 
     # get all possible folders with files
     for folder in os.listdir(download_dir):
@@ -41,11 +45,29 @@ def download(download_dir: str = typer.Argument(..., help='Folder with files con
             for file in os.listdir(body_study_dir):
                 if file.endswith(".tsv"):
                     destination = os.path.join(folder, file[:-4])
-                    download_files(os.path.join(body_study_dir, file), os.path.join(".\data",destination))
+                    download_files(os.path.join(body_study_dir, file), os.path.join(".\data", destination))
                     print("Downloaded file:", file)
 
     print("\nDone downloading files.")
 
+
+@app.command()
+def extract(data_dir: str = typer.Argument(..., help='Folder with downloaded files')) -> None:
+    """
+    Unzips all downloaded files.
+    :param data_dir: Folder with downloaded files
+    :return:
+    """
+    for folder in os.listdir(data_dir):
+        print("Extracting files from:", folder)
+        body_study_dir = os.path.join(data_dir, folder)
+        unpack_tar(body_study_dir)
+        unpack_gz(body_study_dir)
+
+
 if __name__ == "__main__":
     # app() # uncomment to use cli interface
-    download("download")
+    # create("example_input")
+    # download("download")
+    # extract("data")
+    # clean("data")
