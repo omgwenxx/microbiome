@@ -23,7 +23,6 @@ def merge_files(DIR, file_name="total_info.tsv"):
             if download_regex.match(file):
                 download_file = os.path.join(root, file)
 
-    print(download_file)
     download_info = pd.read_csv(download_file, sep='\t')
     metadata = pd.read_csv(meta_file, sep='\t')
     total = pd.merge(download_info, metadata, validate="one_to_one")
@@ -88,11 +87,11 @@ def create_folders():
                 print("Created folder : ", metafiledir)
 
 
-def export_all(numvisit: int):
+def export_all(num_visit: int):
     """
     Exports all visits separately for each body site. The final .tsv files are saved in folders
     with names ./download/<body_site>_<study_name> and ./metadata/<body_site>_<body_site>_<study_name>_metadata
-    :param numvisit: number of visits to extract, all visits <= numvisit are exported
+    :param num_visit: number of visits to extract, all visits <= numvisit are exported
     """
 
     total = get_merge_file()
@@ -103,7 +102,7 @@ def export_all(numvisit: int):
     body_sites = total['sample_body_site'].unique()
     study_names = total['study_full_name'].unique()
     all_visits = total['visit_number'].unique()
-    visits = list(filter(lambda score: score <= numvisit, all_visits))  # filter all visits smaller than numvisit
+    visits = list(filter(lambda score: score <= num_visit, all_visits))  # filter all visits smaller than numvisit
 
     for body_site in body_sites:
         for study_name in study_names:
