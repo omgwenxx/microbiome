@@ -85,9 +85,17 @@ def extract_taxonomy(data_dir: str):
     for folder in os.listdir(data_dir):
         for visit in os.listdir(os.path.join(data_dir, folder)):
             visit_dir = os.path.join(data_dir, folder, visit)
+
+            dir = os.listdir(visit_dir)
+            if len(dir) == 0:
+                print(f"{visit_dir} directory is empty.")
+                continue
+
             output_dir = os.path.join("mothur_output", folder, visit)
             run_mothur(visit_dir, output_dir)
             print("Creating taxonomy with mothur using files from:", visit)
+
+
 
 
 
