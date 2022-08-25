@@ -19,7 +19,8 @@ def unpack_tar(body_folder: str) -> None:
                 os.system(f"tar -xvf {current_file} -C {destination}")
                 print("Unpacked file:", file)
 
-def unpack_gz(body_folder:str) -> None:
+
+def unpack_gz(body_folder: str) -> None:
     """
     Unpacks the downloaded files to the data folder
     """
@@ -35,13 +36,15 @@ def unpack_gz(body_folder:str) -> None:
                         shutil.copyfileobj(f_in, f_out)
                 print("Unpacked file:", file)
 
+
 def unpack_zip(file_path: str) -> None:
     """
     Unpacks a zip file
     """
     with zipfile.ZipFile(file_path, 'r') as zip_ref:
-        zip_ref.extractall("./")
+        zip_ref.extractall(f"./src/")
     print("Unpacked file:", file_path)
+
 
 def clean_folder(body_folder: str) -> None:
     """
@@ -58,6 +61,7 @@ def clean_folder(body_folder: str) -> None:
 
     print(f"Removed .tar and .gz files from {body_folder}, total of {count} files.")
 
+
 def check_os():
     """
     Checks if the operating system is Windows or Linux
@@ -66,6 +70,7 @@ def check_os():
         return "Windows"
     else:
         return "Linux"
+
 
 if __name__ == "__main__":
     print(check_os())

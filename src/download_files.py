@@ -2,8 +2,8 @@ import portal_client
 import argparse
 import os
 
-def download_files(download_file: str, data_dir: str = "./data", reload: bool = False) -> None:
 
+def download_files(download_file: str, data_dir: str = "./data", reload: bool = False) -> None:
     # check if data folder exists
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
@@ -19,7 +19,7 @@ def download_files(download_file: str, data_dir: str = "./data", reload: bool = 
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s ' + "noone cares" # TODO: get_version()
+        version='%(prog)s ' + "noone cares"  # TODO: get_version()
     )
 
     parser.add_argument(
@@ -65,7 +65,7 @@ def download_files(download_file: str, data_dir: str = "./data", reload: bool = 
         required=False,
         dest='project_id',
         help='The Google project ID to use. When using GCP (Google ' + \
-              'Cloud Platform) storage endpoints, this option is required.'
+             'Cloud Platform) storage endpoints, this option is required.'
     )
 
     parser.add_argument(
@@ -115,12 +115,10 @@ def download_files(download_file: str, data_dir: str = "./data", reload: bool = 
     # list of arguments passed to the script
     # possible values describe in the package README.md
     # manifest includes .tsv file with download url links
-    args_list = ["--manifest", f"{download_file}","--destination", f"{data_dir}"]
+    args_list = ["--manifest", f"{download_file}", "--destination", f"{data_dir}"]
 
     # This is later populated if the user specifies the --user argument.
     args = parser.parse_args(args_list)
     args.password = None
     portal_client.parse_cli = lambda: args
     portal_client.main()
-
-
