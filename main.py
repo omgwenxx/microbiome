@@ -1,6 +1,7 @@
 import typer
 from src.create_files import *
 from src.download_files import *
+from src.mothur_process import *
 from src.util import *
 
 app = typer.Typer()
@@ -74,7 +75,21 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
         print("Cleaning files from:", folder)
         body_study_dir = os.path.join(data_dir, folder)
         clean_folder(body_study_dir)
-        break
+
+@app.command()
+def extract_taxonomy(data_dir: str):
+
+    if not os.path.exists("mothur_output"):
+        os.mkdir("mothur_output")
+
+    for folder in os.listdir(data_dir):
+        for visit in os.listdir(os.path.join(data_dir, folder)):
+            visit_dir = os.path.join(data_dir, folder, visit)
+            output_dir = os.path.join("mothur_output", folder, visit)
+            run_mothur(visit_dir, output_dir)
+            print("Creating taxonomy with mothur using files from:", visit)
+
+
 
 if __name__ == "__main__":
     # app() # uncomment to use cli interface
@@ -82,3 +97,4 @@ if __name__ == "__main__":
     # download("download")
     # extract("data")
     # clean("data")
+    extract_taxonomy("data")
