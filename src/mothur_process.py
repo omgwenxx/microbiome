@@ -6,6 +6,7 @@ import requests
 
 ROOT = "."
 
+
 def get_mothur() -> Mothur:
     """
     Create mothur wrapper object based on os system
@@ -82,6 +83,7 @@ def run_mothur(input_dir: str, output_dir: str):
                   inputdir=input_dir, outputdir=output_dir)
     m.rename.file(input="stability.trim.contigs.good.trim.unique.rdp.wang.tax.summary", new="final.rdp18.summary",
                   inputdir=input_dir, outputdir=output_dir)
+
 
 if __name__ == "__main__":
     ROOT = ".."
