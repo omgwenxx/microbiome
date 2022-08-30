@@ -32,13 +32,8 @@ def reformat_taxonomy():
 
         return final
 
-    def reformat_string(summary: pd.DataFrame, rdp_classifier: str) -> pd.DataFrame:
-        if rdp_classifier == "rdp6":
-            summary['taxonomy'] = list(
-                map(lambda x: x.replace('"', "").replace(";", "|")[5:len(x) - 3], summary['taxonomy']))
-        else:
-            summary['taxonomy'] = list(
-                map(lambda x: x.replace('"', "").replace(";", "|")[:len(x) - 1], summary['taxonomy']))
+    def reformat_string(summary: pd.DataFrame) -> pd.DataFrame:
+        summary['taxonomy'] = list(map(lambda x: x.replace('"', "").replace(";", "|"), summary['taxonomy']))
         return summary
 
     # iterate through folders in DATA_DIR
@@ -59,12 +54,49 @@ def reformat_taxonomy():
                                                                     str(final.shape[1]), str(final.shape[0] - 1)))
 
                     filename = "intermediate-otus-%s-%s.csv" % (body_folder, visit_folder)
-                    output_path = os.path.join(OUTPUT_DIR,body_folder,rdp_classifier,filename)
+                    output_path = os.path.join(OUTPUT_DIR, body_folder, rdp_classifier, filename)
 
                     if not os.path.exists(os.path.dirname(output_path)):
                         os.makedirs(os.path.dirname(output_path))
 
-                    final.to_csv(os.path.join(OUTPUT_DIR,body_folder,rdp_classifier,filename), sep='\t', index=False)
+                    final.to_csv(os.path.join(OUTPUT_DIR, body_folder, rdp_classifier, filename), sep='\t', index=False)
+
+
+def unify_files():
+    DATA_DIR = f"{ROOT}/intermediate_results"
+    OUTPUT_DIR = f"{ROOT}/final_data_OTU"
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    for body_folder in os.listdir(DATA_DIR):
+        for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
+            taxonomy_names = []
+            for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
+                print("Adding axonomy from file %s" % (os.path.join(body_folder, rdp_folder, input_file)))
+                current_file = pd.read_csv(os.path.join(DATA_DIR, body_folder, rdp_folder, input_file), sep='\t')
+                taxonomy_names.append(current_file["subject_id"])
+
+    taxonomy_names = [cell for row in taxonomy_names for cell in row]
+    pd.DataFrame(sorted(set(taxonomy_names))).to_csv("unique_taxonomy", index=False, header=False)
+    summary = pd.read_csv("unique_taxonomy", header=None, names=["subject_id"])
+
+    for body_folder in os.listdir(DATA_DIR):
+        for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
+            for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
+
+                if not os.path.exists(os.path.join(OUTPUT_DIR, body_folder, rdp_folder)):
+                    os.makedirs(os.path.join(OUTPUT_DIR, body_folder, rdp_folder))
+
+                current_file = os.path.join(DATA_DIR, body_folder, rdp_folder, input_file)
+                filename = "final-otus-%s-%s-%s.pcl" % (body_folder, rdp_folder, input_file.split("-")[3])
+                print("Changing taxonomy from file %s" % current_file)
+                current_pd = pd.read_csv(current_file, sep='\t')
+                merge = pd.merge(summary, current_pd, how='left', on='subject_id').fillna(0)
+                merge.to_csv(os.path.join(OUTPUT_DIR, body_folder, rdp_folder, filename), sep='\t', index=False)
+                print("Current file has %s rows and %s columns" % (merge.shape[0], merge.shape[1]))
+
 
 if __name__ == "__main__":
     ROOT = ".."
+    # write code here for testing functions
