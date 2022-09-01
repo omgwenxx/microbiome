@@ -64,39 +64,44 @@ def reformat_taxonomy():
 
 def unify_files():
     DATA_DIR = f"{ROOT}/intermediate_results"
-    OUTPUT_DIR = f"{ROOT}/final_data_OTU"
+    OUTPUT_DIR = f"{ROOT}/final_data"
+    TAX_DIR = f"{ROOT}/taxonomy"
 
     if not os.path.exists(OUTPUT_DIR):
         os.makedirs(OUTPUT_DIR)
 
+    if not os.path.exists(TAX_DIR):
+        os.makedirs(TAX_DIR)
+
     for body_folder in os.listdir(DATA_DIR):
+        print("Creating taxonomy for %s" % body_folder)
         for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
             taxonomy_names = []
             for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
-                print("Adding axonomy from file %s" % (os.path.join(body_folder, rdp_folder, input_file)))
                 current_file = pd.read_csv(os.path.join(DATA_DIR, body_folder, rdp_folder, input_file), sep='\t')
                 taxonomy_names.append(current_file["subject_id"])
 
-    taxonomy_names = [cell for row in taxonomy_names for cell in row]
-    pd.DataFrame(sorted(set(taxonomy_names))).to_csv("unique_taxonomy", index=False, header=False)
-    summary = pd.read_csv("unique_taxonomy", header=None, names=["subject_id"])
+            taxonomy_names = [cell for row in taxonomy_names for cell in row]
+            pd.DataFrame(sorted(set(taxonomy_names))).to_csv(f"{TAX_DIR}/{body_folder}_{rdp_folder}_taxonomy", index=False, header=False)
 
+    print()
     for body_folder in os.listdir(DATA_DIR):
         for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
+            summary = pd.read_csv(f"{TAX_DIR}/{body_folder}_{rdp_folder}_taxonomy", header=None, names=["subject_id"])
             for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
 
                 if not os.path.exists(os.path.join(OUTPUT_DIR, body_folder, rdp_folder)):
                     os.makedirs(os.path.join(OUTPUT_DIR, body_folder, rdp_folder))
 
                 current_file = os.path.join(DATA_DIR, body_folder, rdp_folder, input_file)
-                filename = "final-otus-%s-%s-%s.pcl" % (body_folder, rdp_folder, input_file.split("-")[3])
-                print("Changing taxonomy from file %s" % current_file)
+                filename = "otus-%s-%s-%s.pcl" % (body_folder, rdp_folder, input_file.split("-")[3])
+                print("Changing taxonomy from file %s" % filename)
                 current_pd = pd.read_csv(current_file, sep='\t')
                 merge = pd.merge(summary, current_pd, how='left', on='subject_id').fillna(0)
                 merge.to_csv(os.path.join(OUTPUT_DIR, body_folder, rdp_folder, filename), sep='\t', index=False)
-                print("Current file has %s rows and %s columns" % (merge.shape[0], merge.shape[1]))
+                print("Current file has %s features (taxonomy) and %s subjects" % (merge.shape[0], merge.shape[1]))
 
 
 if __name__ == "__main__":
     ROOT = ".."
-    # write code here for testing functions
+    unify_files()
