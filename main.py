@@ -3,7 +3,7 @@ from src.create_files import *
 from src.download_files import *
 from src.mothur_process import *
 from src.util import *
-
+from src.idability import *
 app = typer.Typer()
 
 
@@ -95,6 +95,23 @@ def extract_taxonomy(data_dir: str):
             run_mothur(visit_dir, output_dir)
             print("Creating taxonomy with mothur using files from:", visit)
 
+@app.command()
+def idability_code() -> None:
+    """
+    Runs idability software to extract codes and confusion matrix
+    """
+    DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
+    OUTPUT_DIR = "idability_output/codes"
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    for file in os.listdir(DATA_DIR):
+        if file.endswith("visit1.pcl"):
+            print("Creating code for :", file)
+            args_list = [os.path.join(DATA_DIR, file), "-o", os.path.join(OUTPUT_DIR, file[:-4]+".codes.txt")]
+            run_idability(args_list)
+
 
 
 
@@ -105,4 +122,5 @@ if __name__ == "__main__":
     # download("download")
     # extract("data")
     # clean("data")
-    extract_taxonomy("data")
+    # extract_taxonomy("data")
+    idability_code()
