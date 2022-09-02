@@ -100,7 +100,8 @@ def idability_code() -> None:
     """
     Runs idability software to extract codes and confusion matrix
     """
-    DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
+    # DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
+    DATA_DIR = "idability_data/otus-tables"
     OUTPUT_DIR = "idability_output/codes"
 
     if not os.path.exists(OUTPUT_DIR):
@@ -110,6 +111,30 @@ def idability_code() -> None:
         if file.endswith("visit1.pcl"):
             print("Creating code for :", file)
             args_list = [os.path.join(DATA_DIR, file), "-o", os.path.join(OUTPUT_DIR, file[:-4]+".codes.txt")]
+            run_idability(args_list)
+
+
+@app.command()
+def idability_eval() -> None:
+    """
+    Runs idability software to evaluate codes and print confusion matrix
+    """
+    # DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
+    DATA_DIR = "idability_data/otus-tables"
+    CODE_DIR = "idability_output/codes"
+    OUTPUT_DIR = "idability_output/eval"
+
+    if not os.path.exists(OUTPUT_DIR):
+        os.makedirs(OUTPUT_DIR)
+
+    for file in os.listdir(DATA_DIR):
+        if file.endswith("visit2.pcl"):
+            code_file = os.path.join(CODE_DIR, file[:-5] + "1.codes.txt")
+            print("Evaluating code for :", file)
+            print("Using code file :", code_file)
+            args_list = [os.path.join(DATA_DIR, file),
+                         "-c", os.path.join(CODE_DIR, file[:-5] + "1.codes.txt"),
+                         "-o", os.path.join(OUTPUT_DIR, file[:-4]+".eval.txt")]
             run_idability(args_list)
 
 
@@ -123,4 +148,5 @@ if __name__ == "__main__":
     # extract("data")
     # clean("data")
     # extract_taxonomy("data")
-    idability_code()
+    # idability_code()
+    idability_eval()
