@@ -286,7 +286,7 @@ def write_codes(sample_codes, path):
             items = [sample]
             items += [c_na] if code is None else code
             print("\t".join(items), file=fh)
-    print("wrote codes to:", path, file=sys.stderr)
+    print("wrote codes to:", path)
 
 
 def read_codes(path):
@@ -318,7 +318,7 @@ def write_hits(sample_hits, path):
                 items += ["matches" if len(hits) > 0 else "no_matches"]
                 items += hits
             print("\t".join(items), file=fh)
-    print("wrote hits to:", path, file=sys.stderr)
+    print("wrote hits to:", path)
 
 
 # ---------------------------------------------------------------------------
@@ -391,7 +391,7 @@ def encode_all(sfv, abund_detect, abund_nondetect, similarity_cutoff, min_code_s
     # rebuild sfv with only features above abund threshold
     sfv = reduce_sfv(sfv, cutoff=abund_detect)
     # prioritize features
-    print("performing requested feature ranking:", ranking, file=sys.stderr)
+    print("performing requested feature ranking:", ranking)
     rank_function = {"rarity": rank_by_rarity, "abundance_gap": rank_by_abundgap}[ranking]
     sorted_features = rank_function(sfv, fsv, abund_nondetect)
     # simplify sfv and fsv to sets
@@ -475,12 +475,12 @@ def run_idability(input_args):
         output_path = ".".join(items)
 
     # do this for either encoding/decoding
-    print("loading table file:", table_path, file=sys.stderr)
+    print("loading table file:", table_path)
     sfv = load_sfv(table_path, abund_nondetect)
 
     # make codes mode
     if codes_path is None:
-        print("encoding the table", file=sys.stderr)
+        print("encoding the table:", table_path)
         sample_codes = encode_all(
             sfv,
             abund_detect=abund_detect,
@@ -493,7 +493,7 @@ def run_idability(input_args):
 
     # compare codes to table mode
     else:
-        print("decoding the table", file=sys.stderr)
+        print("decoding the table:", table_path)
         sample_codes = read_codes(codes_path)
         sample_hits = decode_all(
             sfv,
@@ -501,7 +501,3 @@ def run_idability(input_args):
             abund_detect=abund_detect,
         )
         write_hits(sample_hits, output_path)
-
-
-if __name__ == "__main__":
-    run_idability()
