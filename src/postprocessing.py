@@ -94,7 +94,8 @@ def unify_files():
                     os.makedirs(os.path.join(output_dir, body_folder, rdp_folder))
 
                 current_file = os.path.join(data_dir, body_folder, rdp_folder, input_file)
-                filename = "otus-%s-%s-%s.pcl" % (body_folder, rdp_folder, input_file.split("-")[3])
+                visit = input_file.split("-")[3].split(".")[0]
+                filename = f"otus-{body_folder}-{rdp_folder}-{visit}.pcl"
                 print("Changing taxonomy from file %s" % filename)
                 current_pd = pd.read_csv(current_file, sep='\t')
                 merge = pd.merge(summary, current_pd, how='left', on='subject_id').fillna(0)
