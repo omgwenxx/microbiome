@@ -74,6 +74,7 @@ def create_folders():
     # create folder for files
     for body_site in body_sites:
         for study_name in study_names:
+            study_name = study_name.replace(" ", "_")
             body_site = body_site.replace(" ", "_")
             filedir = f"{downloaddir}/{body_site}_{study_name}"
             metafiledir = f"{metadatadir}/{body_site}_{study_name}_metadata"
