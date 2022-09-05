@@ -7,12 +7,11 @@ import re
 ROOT = "."
 
 
-def reformat_taxonomy():
-    DATA_DIR = f"{ROOT}/mothur_output"
-    OUTPUT_DIR = f"{ROOT}/intermediate_results"
+def reformat_taxonomy(data_dir: str):
+    output_dir = f"{ROOT}/intermediate_results"
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     def compute_abundances(summary: pd.DataFrame):
         taxonomy = summary['taxonomy']
@@ -39,69 +38,71 @@ def reformat_taxonomy():
     # iterate through folders in DATA_DIR
     # summary regular expression to fit final.rdp[number][possible second number].summary
     summary_regex = re.compile(r'final.rdp\d?\d.summary')
-    for body_folder in os.listdir(DATA_DIR):
-        for visit_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
-            for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{visit_folder}"):
+    for body_folder in os.listdir(data_dir):
+        for visit_folder in os.listdir(f"{data_dir}/{body_folder}"):
+            for input_file in os.listdir(f"{data_dir}/{body_folder}/{visit_folder}"):
                 if summary_regex.match(input_file):
                     if "rdp6" in input_file:
                         rdp_classifier = "rdp6"
                     else:
                         rdp_classifier = "rdp18"
-                    summary = pd.read_csv(f"{DATA_DIR}/{body_folder}/{visit_folder}/{input_file}", sep='\t')
-                    summary = reformat_string(summary, rdp_classifier)
+                    summary = pd.read_csv(f"{data_dir}/{body_folder}/{visit_folder}/{input_file}", sep='\t')
+                    summary = reformat_string(summary)
                     final = compute_abundances(summary)
                     print("%s has %s subjects and %s attributes" % (f"{body_folder}/{visit_folder}/{input_file}",
                                                                     str(final.shape[1]), str(final.shape[0] - 1)))
 
                     filename = "intermediate-otus-%s-%s.csv" % (body_folder, visit_folder)
-                    output_path = os.path.join(OUTPUT_DIR, body_folder, rdp_classifier, filename)
+                    output_path = os.path.join(output_dir, body_folder, rdp_classifier, filename)
 
                     if not os.path.exists(os.path.dirname(output_path)):
                         os.makedirs(os.path.dirname(output_path))
 
-                    final.to_csv(os.path.join(OUTPUT_DIR, body_folder, rdp_classifier, filename), sep='\t', index=False)
+                    final.to_csv(os.path.join(output_dir, body_folder, rdp_classifier, filename), sep='\t', index=False)
 
 
 def unify_files():
-    DATA_DIR = f"{ROOT}/intermediate_results"
-    OUTPUT_DIR = f"{ROOT}/final_data"
-    TAX_DIR = f"{ROOT}/taxonomy"
+    data_dir = f"{ROOT}/intermediate_results"
+    output_dir = f"{ROOT}/final_data"
+    tax_dir = f"{ROOT}/taxonomy"
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    if not os.path.exists(TAX_DIR):
-        os.makedirs(TAX_DIR)
+    if not os.path.exists(tax_dir):
+        os.makedirs(tax_dir)
 
-    for body_folder in os.listdir(DATA_DIR):
+    for body_folder in os.listdir(data_dir):
         print("Creating taxonomy for %s" % body_folder)
-        for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
+        for rdp_folder in os.listdir(f"{data_dir}/{body_folder}"):
             taxonomy_names = []
-            for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
-                current_file = pd.read_csv(os.path.join(DATA_DIR, body_folder, rdp_folder, input_file), sep='\t')
+            for input_file in os.listdir(f"{data_dir}/{body_folder}/{rdp_folder}"):
+                current_file = pd.read_csv(os.path.join(data_dir, body_folder, rdp_folder, input_file), sep='\t')
                 taxonomy_names.append(current_file["subject_id"])
 
             taxonomy_names = [cell for row in taxonomy_names for cell in row]
-            pd.DataFrame(sorted(set(taxonomy_names))).to_csv(f"{TAX_DIR}/{body_folder}_{rdp_folder}_taxonomy", index=False, header=False)
+            pd.DataFrame(sorted(set(taxonomy_names))).to_csv(f"{tax_dir}/{body_folder}_{rdp_folder}_taxonomy",
+                                                             index=False, header=False)
 
     print()
-    for body_folder in os.listdir(DATA_DIR):
-        for rdp_folder in os.listdir(f"{DATA_DIR}/{body_folder}"):
-            summary = pd.read_csv(f"{TAX_DIR}/{body_folder}_{rdp_folder}_taxonomy", header=None, names=["subject_id"])
-            for input_file in os.listdir(f"{DATA_DIR}/{body_folder}/{rdp_folder}"):
+    for body_folder in os.listdir(data_dir):
+        for rdp_folder in os.listdir(f"{data_dir}/{body_folder}"):
+            summary = pd.read_csv(f"{tax_dir}/{body_folder}_{rdp_folder}_taxonomy", header=None, names=["subject_id"])
+            for input_file in os.listdir(f"{data_dir}/{body_folder}/{rdp_folder}"):
 
-                if not os.path.exists(os.path.join(OUTPUT_DIR, body_folder, rdp_folder)):
-                    os.makedirs(os.path.join(OUTPUT_DIR, body_folder, rdp_folder))
+                if not os.path.exists(os.path.join(output_dir, body_folder, rdp_folder)):
+                    os.makedirs(os.path.join(output_dir, body_folder, rdp_folder))
 
-                current_file = os.path.join(DATA_DIR, body_folder, rdp_folder, input_file)
+                current_file = os.path.join(data_dir, body_folder, rdp_folder, input_file)
                 filename = "otus-%s-%s-%s.pcl" % (body_folder, rdp_folder, input_file.split("-")[3])
                 print("Changing taxonomy from file %s" % filename)
                 current_pd = pd.read_csv(current_file, sep='\t')
                 merge = pd.merge(summary, current_pd, how='left', on='subject_id').fillna(0)
-                merge.to_csv(os.path.join(OUTPUT_DIR, body_folder, rdp_folder, filename), sep='\t', index=False)
+                merge.to_csv(os.path.join(output_dir, body_folder, rdp_folder, filename), sep='\t', index=False)
                 print("Current file has %s features (taxonomy) and %s subjects" % (merge.shape[0], merge.shape[1]))
 
 
 if __name__ == "__main__":
     ROOT = ".."
+    reformat_taxonomy(f"{ROOT}/mothur_output/buccal_mucosa_momspi")
     unify_files()

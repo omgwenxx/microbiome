@@ -4,6 +4,8 @@ from src.download_files import *
 from src.mothur_process import *
 from src.util import *
 from src.idability import *
+from src.postprocessing import *
+
 app = typer.Typer()
 
 
@@ -65,6 +67,7 @@ def extract(data_dir: str = typer.Argument(..., help='Folder with downloaded fil
         unpack_tar(body_study_dir)
         unpack_gz(body_study_dir)
 
+
 @app.command()
 def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files')) -> None:
     """
@@ -76,9 +79,9 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
         body_study_dir = os.path.join(data_dir, folder)
         clean_folder(body_study_dir)
 
+
 @app.command()
 def extract_taxonomy(data_dir: str):
-
     if not os.path.exists("mothur_output"):
         os.mkdir("mothur_output")
 
@@ -95,6 +98,16 @@ def extract_taxonomy(data_dir: str):
             run_mothur(visit_dir, output_dir)
             print("Creating taxonomy with mothur using files from:", visit)
 
+
+def postprocess(data_dir: str = "mothur_output"):
+    """
+    Postprocesses all body site data folders.
+    :return:
+    """
+    reformat_taxonomy(data_dir)
+    unify_files()
+
+
 @app.command()
 def idability_code() -> None:
     """
@@ -110,8 +123,9 @@ def idability_code() -> None:
     for file in os.listdir(DATA_DIR):
         if file.endswith("visit1.pcl"):
             print("Creating code for :", file)
-            args_list = [os.path.join(DATA_DIR, file), "-o", os.path.join(OUTPUT_DIR, file[:-4]+".codes.txt")]
+            args_list = [os.path.join(DATA_DIR, file), "-o", os.path.join(OUTPUT_DIR, file[:-4] + ".codes.txt")]
             run_idability(args_list)
+            print()  # for improving readablity of output
 
 
 @app.command()
@@ -134,11 +148,9 @@ def idability_eval() -> None:
             print("Using code file :", code_file)
             args_list = [os.path.join(DATA_DIR, file),
                          "-c", os.path.join(CODE_DIR, file[:-5] + "1.codes.txt"),
-                         "-o", os.path.join(OUTPUT_DIR, file[:-4]+".eval.txt")]
+                         "-o", os.path.join(OUTPUT_DIR, file[:-4] + ".eval.txt")]
             run_idability(args_list)
-
-
-
+            print()
 
 
 if __name__ == "__main__":
@@ -148,5 +160,6 @@ if __name__ == "__main__":
     # extract("data")
     # clean("data")
     # extract_taxonomy("data")
+    postprocess()
     # idability_code()
-    idability_eval()
+    # idability_eval()
