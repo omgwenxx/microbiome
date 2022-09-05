@@ -82,7 +82,7 @@ ARGUMENTS:
 # ---------------------------------------------------------------
 
 c_na = "#N/A"
-c_epsilon = 1e-20
+c_epsilon = 1e-20 # original value
 c_codes_extension = "codes.txt"
 c_hits_extension = "hits.txt"
 c_relab_detect = 0.001
@@ -416,7 +416,7 @@ def encode_all(sfv, abund_detect, abund_nondetect, similarity_cutoff, min_code_s
 # ---------------------------------------------------------------------------
 
 def check_one_code(code, sfv_sets):
-    """ compare a single code to a population """
+    """ compare a single code to a population, returns all hits (sample that match code)"""
     code_set = set(code)
     hits = []
     for sample, features_set in sfv_sets.items():

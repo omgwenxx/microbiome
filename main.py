@@ -109,57 +109,54 @@ def postprocess(data_dir: str = "mothur_output"):
 
 
 @app.command()
-def idability_code() -> None:
+def idability_code(data_dir: str, output_dir: str = "idability_output/codes") -> None:
     """
     Runs idability software to extract codes and confusion matrix
     """
-    # DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
-    DATA_DIR = "idability_data/otus-tables"
-    OUTPUT_DIR = "idability_output/codes"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-
-    for file in os.listdir(DATA_DIR):
+    for file in os.listdir(data_dir):
         if file.endswith("visit1.pcl"):
             print("Creating code for :", file)
-            args_list = [os.path.join(DATA_DIR, file), "-o", os.path.join(OUTPUT_DIR, file[:-4] + ".codes.txt")]
+            args_list = [os.path.join(data_dir, file), "-o", os.path.join(output_dir, file[:-4] + ".codes.txt")]
             run_idability(args_list)
             print()  # for improving readablity of output
 
 
 @app.command()
-def idability_eval() -> None:
+def idability_eval(data_dir: str, code_dir: str = "idability_output/codes", output_dir: str = "idability_output/eval") -> None:
     """
     Runs idability software to evaluate codes and print confusion matrix
     """
-    # DATA_DIR = "final_data/buccal_mucosa_momspi/rdp6"
-    DATA_DIR = "idability_data/otus-tables"
-    CODE_DIR = "idability_output/codes"
-    OUTPUT_DIR = "idability_output/eval"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    if not os.path.exists(OUTPUT_DIR):
-        os.makedirs(OUTPUT_DIR)
-
-    for file in os.listdir(DATA_DIR):
+    for file in os.listdir(data_dir):
         if file.endswith("visit2.pcl"):
-            code_file = os.path.join(CODE_DIR, file[:-5] + "1.codes.txt")
+            code_file = os.path.join(code_dir, file[:-5] + "1.codes.txt")
             print("Evaluating code for :", file)
             print("Using code file :", code_file)
-            args_list = [os.path.join(DATA_DIR, file),
-                         "-c", os.path.join(CODE_DIR, file[:-5] + "1.codes.txt"),
-                         "-o", os.path.join(OUTPUT_DIR, file[:-4] + ".eval.txt")]
+            args_list = [os.path.join(data_dir, file),
+                         "-c", os.path.join(code_dir, file[:-5] + "1.codes.txt"),
+                         "-o", os.path.join(output_dir, file[:-4] + ".eval.txt")]
             run_idability(args_list)
             print()
 
 
 if __name__ == "__main__":
-    # app() # uncomment to use cli interface
+    app() # uncomment to use cli interface
+
+    # Run the app with completely new data
     # create("example_input")
     # download("download")
     # extract("data")
     # clean("data")
     # extract_taxonomy("data")
-    postprocess()
-    # idability_code()
-    # idability_eval()
+    # postprocess()
+    # idability_code("final_data/buccal_mucosa_momspi/rdp6")
+    # idability_eval("final_data/buccal_mucosa_momspi/rdp6")
+
+    # Run app with data provided by the idability project
+    # idability_code("data_idability/otus-tables")
+    # idability_eval("data_idability/otus-tables")
