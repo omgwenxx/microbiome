@@ -1,7 +1,9 @@
 import pandas as pd
 import os
 import re
+import sys
 
+ROOT = "."
 
 def merge_files(DIR, file_name="total_info.tsv"):
     """
@@ -9,7 +11,7 @@ def merge_files(DIR, file_name="total_info.tsv"):
     Saves it into a file called total_info.tsv if not named otherwise
     """
 
-    # TODO change this to be parameter
+    print("Merging files...")
     metadata_regex = re.compile(r'hmp_manifest_metadata_(.*).tsv')  # match hmp_manifest_metadata_*.tsv files
     download_regex = re.compile(r'hmp_manifest_(?!metadata)')  # match hmp_manifest_*.tsv files
 
@@ -24,37 +26,25 @@ def merge_files(DIR, file_name="total_info.tsv"):
                 download_file = os.path.join(root, file)
 
     download_info = pd.read_csv(download_file, sep='\t')
-    metadata = pd.read_csv(meta_file, sep='\t')
-    total = pd.merge(download_info, metadata, validate="one_to_one")
+    metadata = pd.read_csv(meta_file, sep='\t').drop_duplicates()
+    total = pd.merge(metadata, download_info, validate="one_to_many", on="sample_id")
     print("Body sites included in the dataset: %s" % (str(total["sample_body_site"].unique())))
 
     # puts subject id as first column
     subject_ids = total['subject_id']
     total = total.drop(columns=['subject_id'])
     total.insert(loc=0, column='subject_id', value=subject_ids)
-    total.to_csv(file_name, index=False)
+    total.to_csv(f"{ROOT}/{file_name}", index=False)
     return total
 
 
-def get_merge_file():
-    # Create .csv file with information about samples
-    if not os.path.exists("total_info.tsv"):
-        print("Merging files...")
-        total = merge_files()
-    else:
-        print("total_info.tsv already exists")
-        total = pd.read_csv("total_info.tsv")
 
-    return total
 
 
 def create_folders():
     """
     Creates folder structure for the final .tsv files
     """
-
-    total = get_merge_file()
-
     downloaddir = "./download"
     metadatadir = "./metadata"
 
@@ -68,6 +58,7 @@ def create_folders():
         print("Created folder : ", metadatadir)
 
     # extract body sites and study names
+    total = pd.read_csv(f"{ROOT}/total_info.tsv")
     body_sites = total['sample_body_site'].unique()
     study_names = total['study_full_name'].unique()
 
@@ -95,7 +86,7 @@ def export_all(num_visit: int):
     :param num_visit: number of visits to extract, all visits <= numvisit are exported
     """
 
-    total = get_merge_file()
+    total = pd.read_csv(f"{ROOT}/total_info.tsv")
     downloaddir = "./download"
     metadatadir = "./metadata"
 
