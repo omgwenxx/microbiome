@@ -5,6 +5,8 @@ from mothur_py import Mothur
 import requests
 
 ROOT = "."
+with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
+    config = json.load(jsonfile)
 
 
 def get_mothur() -> Mothur:
@@ -29,9 +31,7 @@ def get_mothur() -> Mothur:
 
     elif check_os() == "Linux":
         print("You are operating on Linux.")
-        # TODO add Linux support
-        # m = Mothur(mothur_path='<path>/mothur-1.46.1/mothur', verbosity=2)
-        return None
+        return Mothur(mothur_path=f'{config["linux_path"]}/mothur-1.46.1/mothur', verbosity=2)
 
 
 def check_file(input_dir: str, file: str) -> bool:
@@ -56,8 +56,6 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
     input_dir = f"{ROOT}/{input_dir}"
     output_dir = f"{ROOT}/{output_dir}"
 
-    with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
-        config = json.load(jsonfile)
     prefix = config["file_prefix"]
     processors = config["processors"]
 
@@ -68,31 +66,31 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
     if rerun:
         print("Rerunning mothur on already existing files.")
 
-    if not check_file(input_dir,f"{prefix}.files") or rerun:
+    if not check_file(input_dir, f"{prefix}.files") or rerun:
         m.make.file(inputdir=input_dir, type=config["data_type"], prefix=prefix)
 
-    if not check_file(input_dir,f"{prefix}.trim.contigs.fasta") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.fasta") or rerun:
         m.make.contigs(file=f"{prefix}.files", processors=processors, inputdir=input_dir)
 
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.fasta") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.fasta") or rerun:
         m.screen.seqs(fasta=f"{prefix}.trim.contigs.fasta", contigsreport=f"{prefix}.contigs.report",
                       group=f"{prefix}.contigs.groups", maxambig=0, maxhomop=6, minlength=200, maxlength=1000,
                       mismatches=0,
                       processors=processors, inputdir=input_dir)
 
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
         m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, qaverage=25, inputdir=input_dir)
 
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
         m.unique.seqs(fasta=f"{prefix}.trim.contigs.good.trim.fasta", inputdir=input_dir)
 
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.trim.count_table") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.count_table") or rerun:
         m.count.seqs(name=f"{prefix}.trim.contigs.good.trim.names", group=f"{prefix}.contigs.good.groups",
                      inputdir=input_dir)
 
     tax_dir = f"{ROOT}/src/mothur_files"
     # assign their sequences to the taxonomy outline of rdp file (version 6)
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or rerun:
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset6_032010.fa",
@@ -101,7 +99,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                         processors=processors)
 
     # assign their sequences to the taxonomy outline of rdp file (version 18)
-    if not check_file(input_dir,f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or rerun:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or rerun:
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset18_062020.rdp.fasta",
@@ -109,12 +107,12 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                         output="simple", inputdir=input_dir,
                         processors=processors)
 
-    if check_file(input_dir,f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary"):
+    if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary"):
         m.rename.file(input=f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary",
                       new="final.rdp6.summary",
                       inputdir=input_dir, outputdir=output_dir)
 
-    if check_file(input_dir,f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary"):
+    if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary"):
         m.rename.file(input=f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary", new="final.rdp18.summary",
                       inputdir=input_dir, outputdir=output_dir)
 
@@ -122,4 +120,4 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
 if __name__ == "__main__":
     ROOT = ".."
     run_mothur(input_dir=f"data/buccal_mucosa_momspi/visit1",
-               output_dir="mothur_output/buccal_mucosa_momspi/visit1", rerun=True)
+               output_dir="mothur_output/buccal_mucosa_momspi/visit1")
