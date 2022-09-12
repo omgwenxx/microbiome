@@ -13,7 +13,7 @@ app = typer.Typer()
 def create(input_dir: str = typer.Argument(..., help='Folder with files containing download and metadata information'),
            num_visits: int = 2) -> None:
     """
-    Creates folder with files per body site and visit for downloading and metadata.
+    Creates two folders with files per body site and visit, one downloading and metadata.
     :param num_visits:
     :param input_dir: Folder with files containing download and metadata information
     :return:
@@ -55,7 +55,7 @@ def download(download_dir: str = typer.Argument(..., help='Folder with files con
 
 
 @app.command()
-def extract(data_dir: str = typer.Argument(..., help='Folder with downloaded files')) -> None:
+def decompress(data_dir: str = typer.Argument(..., help='Folder with downloaded files')) -> None:
     """
     Unzips all downloaded files.
     :param data_dir: Folder with downloaded files
@@ -66,6 +66,8 @@ def extract(data_dir: str = typer.Argument(..., help='Folder with downloaded fil
         body_study_dir = os.path.join(data_dir, folder)
         unpack_tar(body_study_dir)
         unpack_gz(body_study_dir)
+
+    print("\nDone extracting files.")
 
 
 @app.command()
@@ -79,22 +81,24 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
         body_study_dir = os.path.join(data_dir, folder)
         clean_folder(body_study_dir)
 
+    print("\nDone cleaning folders.")
+
 
 @app.command()
 def extract_taxonomy(data_dir: str):
     if not os.path.exists("mothur_output"):
         os.mkdir("mothur_output")
 
-    for folder in os.listdir(data_dir):
-        for visit in os.listdir(os.path.join(data_dir, folder)):
-            visit_dir = os.path.join(data_dir, folder, visit)
+    for body_study in os.listdir(data_dir):
+        for visit in os.listdir(os.path.join(data_dir, body_study)):
+            visit_dir = os.path.join(data_dir, body_study, visit)
 
             dir = os.listdir(visit_dir)
             if len(dir) == 0:
                 print(f"{visit_dir} directory is empty.")
                 continue
 
-            output_dir = os.path.join("mothur_output", folder, visit)
+            output_dir = os.path.join("mothur_output", body_study, visit)
             run_mothur(visit_dir, output_dir)
             print("Creating taxonomy with mothur using files from:", visit)
 
@@ -125,7 +129,8 @@ def idability_code(data_dir: str, output_dir: str = "idability_output/codes") ->
 
 
 @app.command()
-def idability_eval(data_dir: str, code_dir: str = "idability_output/codes", output_dir: str = "idability_output/eval") -> None:
+def idability_eval(data_dir: str, code_dir: str = "idability_output/codes",
+                   output_dir: str = "idability_output/eval") -> None:
     """
     Runs idability software to evaluate codes and print confusion matrix
     """
@@ -148,15 +153,25 @@ if __name__ == "__main__":
     app() # uncomment to use cli interface
 
     # Run the app with completely new data
-    # create("example_input")
+    # create files needed for download
+    # create("hmp_portal_files/feces_ibdmdb_fastq") # do not have visit 1 and visit 2 samples
+    # create("hmp_portal_files/feces_moms-pi_fastq")
+    # create("hmp_portal_files/feces_t2d_fastq")
+    # create("hmp_portal_files/vagina_moms-pi_fastq")
+
+    # download files
     # download("download")
+
+    # decompress files
     # extract("data")
+
+    # remove compressed files
     # clean("data")
-    # extract_taxonomy("data")
+
+    # run mothur code
+    extract_taxonomy("data")
+
+    # format taxonomy files
     # postprocess()
     # idability_code("final_data/buccal_mucosa_momspi/rdp6")
     # idability_eval("final_data/buccal_mucosa_momspi/rdp6")
-
-    # Run app with data provided by the idability project
-    # idability_code("data_idability/otus-tables")
-    # idability_eval("data_idability/otus-tables")

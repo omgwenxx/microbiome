@@ -82,7 +82,7 @@ ARGUMENTS:
 # ---------------------------------------------------------------
 
 c_na = "#N/A"
-c_epsilon = 1e-20 # original value
+c_epsilon = 1e-20  # original value
 c_codes_extension = "codes.txt"
 c_hits_extension = "hits.txt"
 c_relab_detect = 0.001

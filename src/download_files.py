@@ -7,7 +7,7 @@ def download_files(download_file: str, data_dir: str = "./data", reload: bool = 
     # check if data folder exists
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
-        print("Created folder:", data_dir)
+        print("\nCreated folder:", data_dir)
 
     # TODO: add functionality to reload files
 

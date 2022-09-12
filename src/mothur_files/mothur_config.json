@@ -2,5 +2,6 @@
   "logfile_name": "LogFile",
   "data_type": "fastq",
   "file_prefix": "stability",
+  "linux_path": "/home/rippberger/",
   "processors": 8
 }

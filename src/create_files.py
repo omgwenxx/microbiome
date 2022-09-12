@@ -5,6 +5,7 @@ import sys
 
 ROOT = "."
 
+
 def merge_files(DIR, file_name="total_info.tsv"):
     """
     This methods merges the download .tsv file with the metadata .tsv file by sample id.
@@ -36,9 +37,6 @@ def merge_files(DIR, file_name="total_info.tsv"):
     total.insert(loc=0, column='subject_id', value=subject_ids)
     total.to_csv(f"{ROOT}/{file_name}", index=False)
     return total
-
-
-
 
 
 def create_folders():
