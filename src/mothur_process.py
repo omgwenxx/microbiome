@@ -5,8 +5,6 @@ from mothur_py import Mothur
 import requests
 
 ROOT = "."
-with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
-    config = json.load(jsonfile)
 
 
 def get_mothur() -> Mothur:
@@ -31,6 +29,8 @@ def get_mothur() -> Mothur:
 
     elif check_os() == "Linux":
         print("You are operating on Linux.")
+        with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
+            config = json.load(jsonfile)
         return Mothur(mothur_path=f'{config["linux_path"]}/mothur-1.46.1/mothur', verbosity=2)
 
 
@@ -56,6 +56,8 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
     input_dir = f"{ROOT}/{input_dir}"
     output_dir = f"{ROOT}/{output_dir}"
 
+    with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
+        config = json.load(jsonfile)
     prefix = config["file_prefix"]
     processors = config["processors"]
 
@@ -119,5 +121,5 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
 
 if __name__ == "__main__":
     ROOT = ".."
-    run_mothur(input_dir=f"data/buccal_mucosa_momspi/visit1",
-               output_dir="mothur_output/buccal_mucosa_momspi/visit1")
+    run_mothur(input_dir=f"data/feces_momspi/visit1",
+               output_dir="mothur_output/feces_momspi/visit1")
