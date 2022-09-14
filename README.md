@@ -2,9 +2,9 @@
 
 This is a framework to download (using [portal_client](https://github.com/IGS/portal_client)) and process fastq files from [HMP Data Portal](https://portal.hmpdacc.org/) containing 
 16s rRNA raw sequence data. The framework uses [mothur](https://mothur.org/) to process the data and generate tables of counts of the number 
-of 16s rRNA genes that affiliated with different operatioonal taxonomic units (OTUs). Lastly, we
+of 16s rRNA genes that affiliated with different operational taxonomic units (OTUs). Lastly, we
 use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based codes
-in order to analyze personalized coes from micriobiom data and evaluate the performance of re-identifying subjects.
+in order to analyze personalized codes from microbiome data and evaluate the performance of re-identifying subjects.
 
 ## Installation
 We provide a `requirements.txt` which includes all the libraries and packages necessary to run the framework.
@@ -70,7 +70,7 @@ data
     |   file3.tar
 ```
 
-**Attention:** The files download are quite big depending on the amount of samples (up to 30GB only in the compressed state or even more). Make sure to have enough Disk Space.
+**Attention:** The files downloaded are quite big depending on the amount of samples (up to 30GB only in the compressed state or even more). Make sure to have enough Disk Space.
 
 ### Decompress files
 After downloading, all files are compressed as .gz files and the .tar files. To decompress all downloaded files run:
@@ -83,10 +83,12 @@ Example use after previous example use command was run:
 python main.py decompress data
 ```
 
-**Again attention:** The files download are quite big (up to 200-300 GB), make sure to have enough Disk Space.
+**Again attention:** The files downloaded are quite big (up to 200-300 GB), make sure to have enough Disk Space.
 
 ### Clean files (optional)
-After decompressing, disk space can get quite full. Run this command to remove not longer needed .tar and .gz files.
+After decompressing, disk space can get quite full. Run this command to remove no longer needed .tar and .gz files.
+Be aware that if you did not run decompress before, you will delete the data that you downloaded.
+
 ```
 python main.py clean <data_dir>
 ```
@@ -95,8 +97,6 @@ Example use after previous example use command was run:
 ```
 python main.py clean data
 ```
-
-Be aware that if you did not run decompress before, you will delete the data that you downloaded.
 
 ### Extract Taxonomy
 ```
