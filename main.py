@@ -48,7 +48,7 @@ def download(download_dir: str = typer.Argument(..., help='Folder with files con
             for file in os.listdir(body_study_dir):
                 if file.endswith(".tsv"):
                     destination = os.path.join(folder, file[:-4])
-                    download_files(os.path.join(body_study_dir, file), os.path.join(".\data", destination))
+                    download_files(os.path.join(body_study_dir, file), os.path.join("./data", destination))
                     print("Downloaded file:", file)
 
     print("\nDone downloading files.")

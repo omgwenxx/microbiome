@@ -3,7 +3,7 @@ import argparse
 import os
 
 
-def download_files(download_file: str, data_dir: str = "./data", reload: bool = False) -> None:
+def download_files(download_file: str, data_dir: str = ".\data", reload: bool = False) -> None:
     # check if data folder exists
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
