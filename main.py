@@ -169,7 +169,7 @@ if __name__ == "__main__":
     # clean("data")
 
     # run mothur code
-    extract_taxonomy("data")
+    # extract_taxonomy("data")
 
     # format taxonomy files
     # postprocess()
