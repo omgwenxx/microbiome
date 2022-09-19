@@ -63,7 +63,10 @@ def create_folders():
     # create folder for files
     for body_site in body_sites:
         for study_name in study_names:
-            study_name = study_name.replace(" ", "_")
+            if study_name == "Inflammatory Bowel Disease Multi-omics Database (IBDMDB)":
+                study_name = "ibdmbd"
+            else:
+                study_name = study_name.replace(" ", "_")
             body_site = body_site.replace(" ", "_")
             filedir = f"{downloaddir}/{body_site}_{study_name}"
             metafiledir = f"{metadatadir}/{body_site}_{study_name}_metadata"
@@ -97,20 +100,26 @@ def export_all(num_visit: int):
     for body_site in body_sites:
         for study_name in study_names:
             body_site = body_site.replace(" ", "_")
-            filedir = f"{downloaddir}/{body_site}_{study_name}"
-            metafiledir = f"{metadatadir}/{body_site}_{study_name}_metadata"
+
+            # save files with correct name formatting
+            if study_name == "Inflammatory Bowel Disease Multi-omics Database (IBDMDB)":
+                study_dir_name = "ibdmbd"
+            else:
+                study_dir_name = study_name.replace(" ", "_")
+
+            filedir = f"{downloaddir}/{body_site}_{study_dir_name}"
+            metafiledir = f"{metadatadir}/{body_site}_{study_dir_name}_metadata"
 
             # create dataframe for each visit
             for visit in visits:
                 print(f"Creating files for {body_site} from {study_name} visit {visit}")
-
-                download_file_name = f"{filedir}/visit{visit}.tsv"
-                metadata_file_name = f"{metafiledir}/visit{visit}_metadata.tsv"
-
                 filtered = total[(total['visit_number'] == visit)
                                  & (total['sample_body_site'] == body_site.replace("_", " "))
                                  & (total['study_full_name'] == study_name)]
                 download = filtered[["file_id", "md5", "size", "urls", "sample_id", "subject_id"]]
                 metadata = filtered[["sample_id", "sample_body_site", "study_full_name", "visit_number", "subject_id"]]
+
+                download_file_name = f"{filedir}/visit{visit}.tsv"
+                metadata_file_name = f"{metafiledir}/visit{visit}_metadata.tsv"
                 download.to_csv(download_file_name, sep='\t', index=False)
                 metadata.to_csv(metadata_file_name, sep='\t', index=False)
