@@ -53,8 +53,11 @@ def check_file(input_dir: str, file: str) -> bool:
 
 
 def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
-    input_dir = f"{ROOT}/{input_dir}"
-    output_dir = f"{ROOT}/{output_dir}"
+    input_dir = os.path.join(ROOT,input_dir)
+    output_dir = os.path.join(ROOT,output_dir)
+
+    if not os.path.isdir(output_dir):
+        os.makedirs(output_dir)
 
     with open(f"{ROOT}/src/mothur_files/mothur_config.json", "r") as jsonfile:
         config = json.load(jsonfile)
@@ -66,7 +69,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
     m.set.dir(input=input_dir)  # set folder where mothur is looking for input files
 
     if rerun:
-        print("Rerunning mothur on already existing files.")
+        print("\nRerunning mothur, will create files even if already exists.")
 
     if not check_file(input_dir, f"{prefix}.files") or rerun:
         m.make.file(inputdir=input_dir, type=config["data_type"], prefix=prefix)
@@ -121,5 +124,3 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
 
 if __name__ == "__main__":
     ROOT = ".."
-    run_mothur(input_dir=f"data/feces_momspi/visit1",
-               output_dir="mothur_output/feces_momspi/visit1")
