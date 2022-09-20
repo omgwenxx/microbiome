@@ -7,33 +7,35 @@ import re
 ROOT = "."
 
 
+def reformat_string(summary: pd.DataFrame) -> pd.DataFrame:
+    summary['taxonomy'] = list(map(lambda x: x.replace('"', "").replace(";", "|"), summary['taxonomy']))
+    return summary
+
+
+def compute_abundances(summary: pd.DataFrame):
+    taxonomy = summary['taxonomy']
+
+    # compute relative abundances for each sample column
+    summary = summary.drop(columns=["taxonomy"])
+    summary = summary.astype(float, errors="ignore")
+    total = summary.iloc[0]  # save total counts of abundances
+
+    # save to final data frame
+    final = pd.concat([taxonomy, summary.divide(total, axis="columns").round(9)], axis=1)
+
+    # remove first row and first column
+    final = final.iloc[1:, :]  # remove first row
+    final = final.drop(columns=["total"])
+    final.rename(columns={'taxonomy': 'subject_id'}, inplace=True)  # rename taxonomy to subject_id, row name
+
+    return final
+
+
 def reformat_taxonomy(data_dir: str):
     output_dir = f"{ROOT}/intermediate_results"
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
-    def compute_abundances(summary: pd.DataFrame):
-        taxonomy = summary['taxonomy']
-
-        # compute relative abundances for each sample column
-        summary = summary.drop(columns=["taxonomy"])
-        summary = summary.astype(float, errors="ignore")
-        total = summary.iloc[0]  # save total counts of abundances
-
-        # save to final data frame
-        final = pd.concat([taxonomy, summary.divide(total, axis="columns").round(9)], axis=1)
-
-        # remove first row and first column
-        final = final.iloc[1:, :]  # remove first row
-        final = final.drop(columns=["total"])
-        final.rename(columns={'taxonomy': 'subject_id'}, inplace=True)  # rename taxonomy to subject_id, row name
-
-        return final
-
-    def reformat_string(summary: pd.DataFrame) -> pd.DataFrame:
-        summary['taxonomy'] = list(map(lambda x: x.replace('"', "").replace(";", "|"), summary['taxonomy']))
-        return summary
 
     # iterate through folders in DATA_DIR
     # summary regular expression to fit final.rdp[number][possible second number].summary
@@ -47,7 +49,6 @@ def reformat_taxonomy(data_dir: str):
                     else:
                         rdp_classifier = "rdp18"
                     summary = pd.read_csv(f"{data_dir}/{body_folder}/{visit_folder}/{input_file}", sep='\t')
-                    summary = reformat_string(summary)
                     final = compute_abundances(summary)
                     print("%s has %s subjects and %s attributes" % (f"{body_folder}/{visit_folder}/{input_file}",
                                                                     str(final.shape[1]), str(final.shape[0] - 1)))
