@@ -5,6 +5,7 @@ from src.mothur_process import *
 from src.util import *
 from src.idability import *
 from src.postprocessing import *
+from typing import Optional
 
 app = typer.Typer()
 
@@ -91,6 +92,7 @@ def extract_taxonomy(data_dir: str):
 
     for body_study in os.listdir(data_dir):
         for visit in os.listdir(os.path.join(data_dir, body_study)):
+            print("Creating taxonomy with mothur using files from:", visit)
             visit_dir = os.path.join(data_dir, body_study, visit)
 
             dir = os.listdir(visit_dir)
@@ -100,10 +102,12 @@ def extract_taxonomy(data_dir: str):
 
             output_dir = os.path.join("mothur_output", body_study, visit)
             run_mothur(visit_dir, output_dir)
-            print("Creating taxonomy with mothur using files from:", visit)
+
+    print("Done creating mothur files.")
 
 
-def postprocess(data_dir: str = "mothur_output"):
+@app.command()
+def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='Folder with output files from mothur process')):
     """
     Postprocesses all body site data folders.
     :return:
@@ -113,51 +117,52 @@ def postprocess(data_dir: str = "mothur_output"):
 
 
 @app.command()
-def idability_code(data_dir: str, output_dir: str = "idability_output/codes") -> None:
+def idability(data_dir: str) -> None:
     """
     Runs idability software to extract codes and confusion matrix
     """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    code_dir = "idability_output/codes"
+    if not os.path.exists(code_dir):
+        os.makedirs(code_dir)
 
+    code_file = ""
     for file in os.listdir(data_dir):
         if file.endswith("visit1.pcl"):
             print("Creating code for :", file)
-            args_list = [os.path.join(data_dir, file), "-o", os.path.join(output_dir, file[:-4] + ".codes.txt")]
+            code_file = os.path.join(code_dir, file[:-4] + ".codes.txt")
+            args_list = [os.path.join(data_dir, file), "-o", code_file]
             run_idability(args_list)
             print()  # for improving readablity of output
 
+    eval_dir: str = "idability_output/eval"
 
-@app.command()
-def idability_eval(data_dir: str, code_dir: str = "idability_output/codes",
-                   output_dir: str = "idability_output/eval") -> None:
-    """
-    Runs idability software to evaluate codes and print confusion matrix
-    """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(eval_dir):
+        os.makedirs(eval_dir)
 
     for file in os.listdir(data_dir):
-        if file.endswith("visit2.pcl"):
-            code_file = os.path.join(code_dir, file[:-5] + "1.codes.txt")
+        if not file.endswith("visit2.pcl"):
             print("Evaluating code for :", file)
             print("Using code file :", code_file)
             args_list = [os.path.join(data_dir, file),
-                         "-c", os.path.join(code_dir, file[:-5] + "1.codes.txt"),
-                         "-o", os.path.join(output_dir, file[:-4] + ".eval.txt")]
+                         "-c", code_file,
+                         "-o", os.path.join(eval_dir, file[:-4] + ".eval.txt")]
             run_idability(args_list)
             print()
 
 
+
+
+
+
 if __name__ == "__main__":
-    app() # uncomment to use cli interface
+    # app() # uncomment to use cli interface
 
     # Run the app with completely new data
     # create files needed for download
     # create("hmp_portal_files/feces_ibdmdb_fastq") # do not have visit 1 and visit 2 samples
-    # create("hmp_portal_files/feces_moms-pi_fastq")
+    # create("hmp_portal_files/feces_momspi_fastq")
     # create("hmp_portal_files/feces_t2d_fastq")
-    # create("hmp_portal_files/vagina_moms-pi_fastq")
+    # create("hmp_portal_files/vagina_momspi_fastq")
 
     # download files
     # download("download")
@@ -172,6 +177,9 @@ if __name__ == "__main__":
     # extract_taxonomy("data")
 
     # format taxonomy files
-    # postprocess()
-    # idability_code("final_data/buccal_mucosa_momspi/rdp6")
-    # idability_eval("final_data/buccal_mucosa_momspi/rdp6")
+    # postprocess("ifs_mothur_output")
+    # idability("final_data/vagina_momspi/rdp18")
+
+
+
+
