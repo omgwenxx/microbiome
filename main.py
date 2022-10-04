@@ -117,7 +117,7 @@ def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='
 
 
 @app.command()
-def idability(data_dir: str) -> None:
+def idability(data_dir: str, code_visit: str = "visit1") -> None:
     """
     Runs idability software to extract codes and confusion matrix
     """
@@ -127,7 +127,7 @@ def idability(data_dir: str) -> None:
 
     code_file = ""
     for file in os.listdir(data_dir):
-        if file.endswith("visit1.pcl"):
+        if file.endswith(f"{code_visit}.pcl"):
             print("Creating code for :", file)
             code_file = os.path.join(code_dir, file[:-4] + ".codes.txt")
             args_list = [os.path.join(data_dir, file), "-o", code_file]
@@ -149,13 +149,8 @@ def idability(data_dir: str) -> None:
             run_idability(args_list)
             print()
 
-
-
-
-
-
 if __name__ == "__main__":
-    # app() # uncomment to use cli interface
+    app() # uncomment to use cli interface
 
     # Run the app with completely new data
     # create files needed for download
@@ -168,7 +163,7 @@ if __name__ == "__main__":
     # download("download")
 
     # decompress files
-    # extract("data")
+    # decompress("data")
 
     # remove compressed files
     # clean("data")
@@ -179,7 +174,3 @@ if __name__ == "__main__":
     # format taxonomy files
     # postprocess("ifs_mothur_output")
     # idability("final_data/vagina_momspi/rdp18")
-
-
-
-
