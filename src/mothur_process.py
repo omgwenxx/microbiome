@@ -84,7 +84,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                       processors=processors, inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
-        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, qaverage=25, inputdir=input_dir)
+        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=1.5, qaverage=25, inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
         m.unique.seqs(fasta=f"{prefix}.trim.contigs.good.trim.fasta", inputdir=input_dir)
@@ -124,3 +124,4 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
 
 if __name__ == "__main__":
     ROOT = ".."
+    run_mothur("data/rectum_momspi/visit2", "mothur_output/rectum_momspi/visit2")
