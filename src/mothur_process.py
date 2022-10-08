@@ -84,7 +84,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                       processors=processors, inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
-        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=1.5, qaverage=25, inputdir=input_dir)
+        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=2, qaverage=25, inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
         m.unique.seqs(fasta=f"{prefix}.trim.contigs.good.trim.fasta", inputdir=input_dir)
@@ -94,13 +94,14 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                      inputdir=input_dir)
 
     tax_dir = f"{ROOT}/src/mothur_files"
+    cutoff = config["cutoff"]
     # assign their sequences to the taxonomy outline of rdp file (version 6)
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or rerun:
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset6_032010.fa",
                         taxonomy=f"{tax_dir}/trainset6_032010.tax",
-                        output="simple", inputdir=input_dir,
+                        output="simple", inputdir=input_dir, cutoff=0,
                         processors=processors)
 
     # assign their sequences to the taxonomy outline of rdp file (version 18)
@@ -109,7 +110,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset18_062020.rdp.fasta",
                         taxonomy=f"{tax_dir}/trainset18_062020.rdp.tax",
-                        output="simple", inputdir=input_dir,
+                        output="simple", inputdir=input_dir, cutoff=0,
                         processors=processors)
 
     if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary"):
