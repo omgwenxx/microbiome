@@ -182,4 +182,23 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 # idea folder, uncomment if you don't need it
-# .idea
+.idea
+
+# data and output folders of framework
+data
+download
+final_data
+example_input
+hmp_portal_files
+idability_output
+ifs_mothur_output
+img
+intermediate_results
+metadata
+mothur_output
+taxonomy
+*.logfile
+*.summary
+total_info.tsv
+Mothur.win.zip
+mothur
