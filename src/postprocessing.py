@@ -21,7 +21,7 @@ def compute_abundances(summary: pd.DataFrame):
     total = summary.iloc[0]  # save total counts of abundances
 
     # save to final data frame
-    final = pd.concat([taxonomy, summary.divide(total, axis="columns").round(9)], axis=1)
+    final = pd.concat([taxonomy, summary.divide(total, axis="columns")], axis=1)
 
     # remove first row and first column
     final = final.iloc[1:, :]  # remove first row
@@ -38,8 +38,8 @@ def reformat_taxonomy(data_dir: str):
         os.makedirs(output_dir)
 
     # iterate through folders in DATA_DIR
-    # summary regular expression to fit final.rdp[number][possible second number].summary
-    summary_regex = re.compile(r'final.rdp\d?\d.summary')
+    # summary regular expression to fit final.rdp6[number][possible second number].summary
+    summary_regex = re.compile(r'final.rdp6\d?\d.summary')
     for body_folder in os.listdir(data_dir):
         for visit_folder in os.listdir(f"{data_dir}/{body_folder}"):
             for input_file in os.listdir(f"{data_dir}/{body_folder}/{visit_folder}"):
@@ -51,7 +51,7 @@ def reformat_taxonomy(data_dir: str):
                     summary = pd.read_csv(f"{data_dir}/{body_folder}/{visit_folder}/{input_file}", sep='\t')
                     final = compute_abundances(summary)
                     print("%s has %s subjects and %s attributes" % (f"{body_folder}/{visit_folder}/{input_file}",
-                                                                    str(final.shape[1]), str(final.shape[0] - 1)))
+                                                                    str(final.shape[1]-1), str(final.shape[0])))
 
                     filename = "intermediate-otus-%s-%s.csv" % (body_folder, visit_folder)
                     output_path = os.path.join(output_dir, body_folder, rdp_classifier, filename)
@@ -103,8 +103,32 @@ def unify_files():
                 merge.to_csv(os.path.join(output_dir, body_folder, rdp_folder, filename), sep='\t', index=False)
                 print("Current file has %s features (taxonomy) and %s subjects" % (merge.shape[0], merge.shape[1]))
 
+# %%
+def create_double_visits(dir, body_dir, rdp, output_dir = "double_visits"):
+    if not os.path.exists(f"{ROOT}/{output_dir}"):
+        os.makedirs(f"{ROOT}/{output_dir}")
 
+    # create files with only TP
+    file_prefix = f"otus-{body_dir}-{rdp}-"
+    filename = f"{file_prefix}visit1.pcl"
+    vis1 = pd.read_csv(os.path.join(dir, body_dir, rdp, filename), sep='\t')
+    subjects1 = vis1.columns[1:].to_series()
+
+    vis = pd.read_csv(os.path.join(dir, body_dir, rdp, f"{file_prefix}visit2.pcl"),sep='\t')
+    subjects = vis.columns[1:].to_series()
+    TP = subjects1[subjects1.isin(subjects)]
+    double = vis1[TP]
+    double.insert(0, "subject_id", vis1["subject_id"])
+    double.to_csv(os.path.join(output_dir, filename), sep='\t',index=False)
+    double.to_csv(os.path.join(output_dir, f"{file_prefix}visit2.pcl"), sep='\t', index=False)
+
+# %%
 if __name__ == "__main__":
     ROOT = ".."
     reformat_taxonomy(f"{ROOT}/mothur_output/buccal_mucosa_momspi")
     unify_files()
+
+    # get double visits
+    for body_dir in os.listdir(f"{ROOT}/final_data"):
+        for rdp in os.listdir(f"{ROOT}/final_data/{body_dir}"):
+            create_double_visits(f"{ROOT}/final_data", body_dir, rdp)
