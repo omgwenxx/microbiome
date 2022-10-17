@@ -39,7 +39,7 @@ def reformat_taxonomy(data_dir: str):
 
     # iterate through folders in DATA_DIR
     # summary regular expression to fit final.rdp6[number][possible second number].summary
-    summary_regex = re.compile(r'final.rdp6\d?\d.summary')
+    summary_regex = re.compile(r'final.rdp\d?\d.summary')
     for body_folder in os.listdir(data_dir):
         for visit_folder in os.listdir(f"{data_dir}/{body_folder}"):
             for input_file in os.listdir(f"{data_dir}/{body_folder}/{visit_folder}"):
@@ -62,9 +62,9 @@ def reformat_taxonomy(data_dir: str):
                     final.to_csv(os.path.join(output_dir, body_folder, rdp_classifier, filename), sep='\t', index=False)
 
 
-def unify_files():
+def unify_files(output_dir:str = "final_data"):
     data_dir = f"{ROOT}/intermediate_results"
-    output_dir = f"{ROOT}/final_data"
+    output_dir = f"{ROOT}/{output_dir}"
     tax_dir = f"{ROOT}/taxonomy"
 
     if not os.path.exists(output_dir):
