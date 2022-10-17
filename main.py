@@ -107,13 +107,14 @@ def extract_taxonomy(data_dir: str):
 
 
 @app.command()
-def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='Folder with output files from mothur process')):
+def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='Folder with output files from mothur process'),
+                output_dir: Optional[str] = typer.Argument("final_data", help='Folder to store postprocessed files')) -> None:
     """
     Postprocesses all body site data folders.
     :return:
     """
     reformat_taxonomy(data_dir)
-    unify_files()
+    unify_files(output_dir)
 
 
 @app.command()
@@ -140,7 +141,7 @@ def idability(data_dir: str, code_visit: str = "visit1") -> None:
         os.makedirs(eval_dir)
 
     for file in os.listdir(data_dir):
-        if not file.endswith("visit2.pcl"):
+        if not file.endswith("visit1.pcl"):
             print("Evaluating code for :", file)
             print("Using code file :", code_file)
             args_list = [os.path.join(data_dir, file),
@@ -172,5 +173,5 @@ if __name__ == "__main__":
     # extract_taxonomy("data")
 
     # format taxonomy files
-    # postprocess("ifs_mothur_output")
-    # idability("final_data/vagina_momspi/rdp18")
+    # postprocess("ifs_mothur_output","final_data_compare")
+    # idability("final_data/feces_momspi/rdp6","visit2")
