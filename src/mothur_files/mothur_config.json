@@ -4,5 +4,5 @@
   "file_prefix": "stability",
   "linux_path": "/home/rippberger/",
   "processors": 8,
-  "cutoff": 50
+  "cutoff": 80
 }
