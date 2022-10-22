@@ -87,7 +87,8 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
 
 @app.command()
 def extract_taxonomy(data_dir: str,
-                     output_dir_name: Optional[str] = typer.Argument("mothur_output", help='Folder to store taxonomy files')) -> None:
+                     output_dir_name: Optional[str] = typer.Argument("mothur_output", help='Folder to store taxonomy files'),
+                     reclassify: bool = typer.Option(False, help="Reruns classification only")) -> None:
     if not os.path.exists("mothur_output"):
         os.mkdir("mothur_output")
 
@@ -102,7 +103,7 @@ def extract_taxonomy(data_dir: str,
                 continue
 
             output_dir = os.path.join(output_dir_name, body_study, visit)
-            run_mothur(visit_dir, output_dir)
+            run_mothur(visit_dir, output_dir, reclassify=reclassify)
 
     print("Done creating mothur files.")
 

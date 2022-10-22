@@ -52,7 +52,7 @@ def check_file(input_dir: str, file: str) -> bool:
         return False
 
 
-def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
+def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify: bool = False) -> None:
     input_dir = os.path.join(ROOT,input_dir)
     output_dir = os.path.join(ROOT,output_dir)
 
@@ -95,22 +95,22 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False) -> None:
 
     tax_dir = f"{ROOT}/src/mothur_files"
     cutoff = config["cutoff"]
-    # assign their sequences to the taxonomy outline of rdp file (version 6)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or rerun:
+    # assign their sequences to the taxonomy outline of rdp6 file (version 6)
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or reclassify:
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset6_032010.fa",
                         taxonomy=f"{tax_dir}/trainset6_032010.tax",
-                        output="simple", inputdir=input_dir, cutoff=0,
+                        output="simple", inputdir=input_dir, cutoff=cutoff,
                         processors=processors)
 
-    # assign their sequences to the taxonomy outline of rdp file (version 18)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or rerun:
+    # assign their sequences to the taxonomy outline of rdp6 file (version 18)
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or reclassify:
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset18_062020.rdp.fasta",
                         taxonomy=f"{tax_dir}/trainset18_062020.rdp.tax",
-                        output="simple", inputdir=input_dir, cutoff=0,
+                        output="simple", inputdir=input_dir, cutoff=cutoff,
                         processors=processors)
 
     if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary"):
