@@ -6,9 +6,9 @@ import sys
 ROOT = "."
 
 
-def merge_files(DIR, file_name="total_info.tsv"):
+def merge_files(input_dir):
     """
-    This methods merges the download .tsv file with the metadata .tsv file by sample id.
+    This method merges the download .tsv file with the metadata .tsv file by sample id.
     Saves it into a file called total_info.tsv if not named otherwise
     """
 
@@ -19,7 +19,7 @@ def merge_files(DIR, file_name="total_info.tsv"):
     meta_file = ""
     download_file = ""
 
-    for root, dirs, files in os.walk(DIR):
+    for root, dirs, files in os.walk(input_dir):
         for file in files:
             if metadata_regex.match(file):
                 meta_file = os.path.join(root, file)
@@ -35,7 +35,7 @@ def merge_files(DIR, file_name="total_info.tsv"):
     subject_ids = total['subject_id']
     total = total.drop(columns=['subject_id'])
     total.insert(loc=0, column='subject_id', value=subject_ids)
-    total.to_csv(f"{ROOT}/{file_name}", index=False)
+    total.to_csv(f"{ROOT}/total_info.tsv", index=False)
     return total
 
 
@@ -43,8 +43,8 @@ def create_folders():
     """
     Creates folder structure for the final .tsv files
     """
-    downloaddir = "./download"
-    metadatadir = "./metadata"
+    downloaddir = f"{ROOT}/download"
+    metadatadir = f"{ROOT}/metadata"
 
     # create folders for download and metadata files
     if not os.path.isdir(downloaddir):
@@ -88,8 +88,8 @@ def export_all(num_visit: int):
     """
 
     total = pd.read_csv(f"{ROOT}/total_info.tsv")
-    downloaddir = "./download"
-    metadatadir = "./metadata"
+    downloaddir = f"{ROOT}/download"
+    metadatadir = f"{ROOT}/metadata"
 
     # extract body sites and study names
     body_sites = total['sample_body_site'].unique()
