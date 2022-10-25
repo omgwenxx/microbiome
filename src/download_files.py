@@ -2,14 +2,18 @@ import portal_client
 import argparse
 import os
 
+ROOT = "."
+def download_files(download_file: str, data_dir: str = f"{ROOT}/data") -> None:
+    """
+    This is a wrapper for using the idability code to download files from the portal.
+    :param download_file: .tsv file with download information
+    :param data_dir: name of folder to save files to
+    :return: 
+    """
 
-def download_files(download_file: str, data_dir: str = ".\data", reload: bool = False) -> None:
-    # check if data folder exists
     if not os.path.isdir(data_dir):
         os.makedirs(data_dir)
         print("\nCreated folder:", data_dir)
-
-    # TODO: add functionality to reload files
 
     parser = argparse.ArgumentParser(
         description='Client to download data described by a manifest file ' + \
@@ -19,7 +23,7 @@ def download_files(download_file: str, data_dir: str = ".\data", reload: bool = 
     parser.add_argument(
         '--version',
         action='version',
-        version='%(prog)s ' + "noone cares"  # TODO: get_version()
+        version='%(prog)s ' + "noone cares"
     )
 
     parser.add_argument(
