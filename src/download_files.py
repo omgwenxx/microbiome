@@ -5,10 +5,10 @@ import os
 ROOT = "."
 def download_files(download_file: str, data_dir: str = f"{ROOT}/data") -> None:
     """
-    This is a wrapper for using the idability code to download files from the portal.
+    This is a wrapper for using the portal_client code to download files from the portal.
     :param download_file: .tsv file with download information
     :param data_dir: name of folder to save files to
-    :return: 
+    :return:
     """
 
     if not os.path.isdir(data_dir):
