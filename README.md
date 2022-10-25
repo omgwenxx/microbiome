@@ -6,6 +6,21 @@ of 16s rRNA genes that affiliated with different operational taxonomic units (OT
 use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based codes
 in order to analyze personalized codes from microbiome data and evaluate the performance of re-identifying subjects.
 
+* [Installation](#installation)
+  + [Linux](#linux)
+  + [Mothur setup](#mothur-setup)
+  * [Example of use](#example-of-use)
+    + [Create files for download and metadata](#create-files-for-download-and-metadata)
+    + [Download files](#download-files)
+    + [Decompress files](#decompress-files)
+    + [Clean files (optional)](#clean-files--optional-)
+    + [Extract Taxonomy](#extract-taxonomy)
+  * [Introduction](#introduction)
+    + [Evaluation](#evaluation)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ## Installation
 We provide a `requirements.txt` which includes all the libraries and packages necessary to run the framework.
 Run the following command to install all the dependencies:
@@ -13,6 +28,17 @@ Run the following command to install all the dependencies:
 pip install -r requirements.txt
 ```
 
+### Linux
+You need to change parameters in the `src/mothur_files/mothur_config.json` if you are using Linux. Change the `linux_path` 
+value to the path were mothur is installed. For example, if you have mothur installed in `/usr/local/bin/mothur-1.46.1`.
+This framework only supports mothur version 1.46.1.
+
+### Mothur setup
+We added the possibility to chnage two parameters in the mothur config file. These parameters are:
+- `processors`: number of processors to use, if you are using multiple processors and the programm crashes, 
+try running the command with processors=1, the more processors you use the more memory is required.
+- `cutoff`: Per default mothur uses to 80% confidence treshold `cutoff=80` which mirrors the original implementation in the Wang paper and the general approach to using 80% confidene in bootstrap values for phylogenetics
+f you set cutoff=0, classify.seqs will return a full taxonomy for every sequence, regardless of the bootstrap value for that taxonomic assignment.
 
 ## Example of use
 
@@ -27,7 +53,10 @@ the samples dashboard
     ![img.png](img/files_filter.png)
 
     Everything else can be filtered by interest e.g. body site. The website provides additional filters e.g. visit number (by pressing "Add filter" in the Samples Tab)
-3. Click "Add all files to the Cart" button![img.png](img/button_img.png)
+3. Click "Add all files to the Cart" button
+
+   ![img.png](img/button_img.png)
+
 4. Click on Cart (right top corner)
 5. Click on the Download Drop Down Button and download "File manifest" file and "Sample Metadata" file. Both files are needed for the framework to work properly. The files need to be created on the same selection of samples. 
 
@@ -37,12 +66,21 @@ Using the following command, the files for later download and metadata files are
 ```
 python main.py create <input_dir>
 ```
-
 Example use:
 ```
 python main.py create hmp_portal_files/feces_moms-pi_fastq
 ```
-Per default only files for two visits are created.
+
+Per default the files for download are created for the first two visits. To increase the number of visits
+```
+python main.py create <input_dir> <num_visits>
+```
+
+Example use:
+```
+python main.py create hmp_portal_files/feces_moms-pi_fastq --num-visits 5
+```
+This command will create all files needed to download the first 5 visits of the feces samples of the moms-pi study.
 
 
 ### Download files
@@ -99,6 +137,8 @@ python main.py clean data
 ```
 
 ### Extract Taxonomy
+We implemented the 
+
 ```
 python main.py extract-taxonomy <data_dir>
 ```
@@ -115,7 +155,7 @@ identify a subject, in the paper also refered ti as metagenomic codes.
 
 ### Evaluation
 The original paper uses a confusion matrix where the classes can be identified as follows:
-- **True Positive (TP)**: A samples was correctly matched, meaning two different visits were matched to the same person.
+- **True Positive (TP)**: A sample was correctly matched, meaning two different visits were matched to the same person.
 - **False Negative**: A previous extracted code does not match the same sample anymore.
 - **False Positive**: One code matches multiple samples. All samples that are not the original sample are false positives.
 
