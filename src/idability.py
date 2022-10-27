@@ -82,7 +82,7 @@ ARGUMENTS:
 # ---------------------------------------------------------------
 
 c_na = "#N/A"
-c_epsilon = 1e-20  # original value
+c_epsilon = 1e-20  # original value, abundances smaller than this are ignored
 c_codes_extension = "codes.txt"
 c_hits_extension = "hits.txt"
 c_relab_detect = 0.001
@@ -260,12 +260,21 @@ def coerce_to_sets(nested_dict):
             for outer_key, inner_dict in nested_dict.items()}
 
 
-def check_hits(sample_hits):
-    """ produces confusion results by comparing keys to lists of hit samples """
-    counts = {k: 0 for k in "1|TP 3|FN+FP 2|TP+FP 4|FN 5|NA".split()}
+def check_hits(sample_hits, sample_codes):
+    """
+    produces confusion results by comparing keys to lists of hit samples
+    sample_hits: dict of sample -> with all samples that match code
+    sample_codes: dict of sample -> with corresponding code
+    """
+    counts = {k: 0 for k in "1|TP 3|FN+FP 2|TP+FP 4|FN 5|NA 6|TN".split()}
+    codes_samples = sample_codes.keys() # IDs of samples in code file
     for sample, hits in sample_hits.items():
+        # if there is no match we additionally check for TN
         if hits is None:
-            counts["5|NA"] += 1
+            if sample in codes_samples:
+                counts["5|NA"] += 1
+            else:
+                counts["6|TN"] += 1
         else:
             tp_hit = True if sample in hits else False
             fp_hit = True if len([sample2 for sample2 in hits if sample2 != sample]) > 0 else False
@@ -273,6 +282,10 @@ def check_hits(sample_hits):
                 key = "2|TP+FP" if fp_hit else "1|TP"
             else:
                 key = "3|FN+FP" if fp_hit else "4|FN"
+
+            if len(hits) == 0 and sample not in codes_samples:
+                key = "6|TN"
+
             counts[key] += 1
     return counts
 
@@ -301,10 +314,10 @@ def read_codes(path):
     return sample_codes
 
 
-def write_hits(sample_hits, path):
+def write_hits(sample_hits, sample_codes, path):
     """ write hit results and summary to a text file """
     # compute confusion line
-    confusion = check_hits(sample_hits)
+    confusion = check_hits(sample_hits, sample_codes)
     with try_open(path, "w") as fh:
         for confusion_class in sorted(confusion):
             count = confusion[confusion_class]
@@ -428,7 +441,8 @@ def check_one_code(code, sfv_sets):
 def decode_all(sfv, sample_codes, abund_detect):
     """ compare all codes to a population """
     sfv_sets = coerce_to_sets(reduce_sfv(sfv, abund_detect))
-    sample_hits = {}
+    table_samples = sfv_sets.keys()
+    sample_hits = dict.fromkeys(table_samples)
     for sample, code in sample_codes.items():
         sample_hits[sample] = None if code is None else check_one_code(code, sfv_sets)
     return sample_hits
@@ -496,8 +510,8 @@ def run_idability(input_args):
         print("decoding the table:", table_path)
         sample_codes = read_codes(codes_path)
         sample_hits = decode_all(
-            sfv,
-            sample_codes,
+            sfv, # input file
+            sample_codes, # codes to compare
             abund_detect=abund_detect,
         )
-        write_hits(sample_hits, output_path)
+        write_hits(sample_hits,sample_codes,output_path)
