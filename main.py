@@ -7,6 +7,7 @@ from src.idability import *
 from src.postprocessing import *
 from typing import Optional
 
+ROOT = "."
 app = typer.Typer()
 
 
@@ -15,7 +16,7 @@ def create(input_dir: str = typer.Argument(..., help='Folder with files containi
            num_visits: int = 2) -> None:
     """
     Creates two folders with files per body site and visit, one downloading and metadata.
-    :param num_visits:
+    :param num_visits: Number of visits to be included (<= visit number)
     :param input_dir: Folder with files containing download and metadata information
     :return:
     """
@@ -30,7 +31,7 @@ def create(input_dir: str = typer.Argument(..., help='Folder with files containi
 def download(download_dir: str = typer.Argument(..., help='Folder with files containing download information')) -> None:
     """
     Downloads files from the portal.
-    :param download_dir: Folder with files containing download information
+    :param download_dir: Folder with files containing download information, created after running creat command
     :return:
     """
     first_folder = True  # for formatting console output
@@ -49,7 +50,7 @@ def download(download_dir: str = typer.Argument(..., help='Folder with files con
             for file in os.listdir(body_study_dir):
                 if file.endswith(".tsv"):
                     destination = os.path.join(folder, file[:-4])
-                    download_files(os.path.join(body_study_dir, file), os.path.join("./data", destination))
+                    download_files(os.path.join(body_study_dir, file), os.path.join(f"{ROOT}/data", destination))
                     print("Downloaded file:", file)
 
     print("\nDone downloading files.")
@@ -88,9 +89,10 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
 @app.command()
 def extract_taxonomy(data_dir: str,
                      output_dir_name: Optional[str] = typer.Argument("mothur_output", help='Folder to store taxonomy files'),
+                     rerun: bool = typer.Option(False, help="Reruns the whole process of creating files"),
                      reclassify: bool = typer.Option(False, help="Reruns classification only")) -> None:
-    if not os.path.exists("mothur_output"):
-        os.mkdir("mothur_output")
+    if not os.path.exists(output_dir_name):
+        os.mkdir(output_dir_name)
 
     for body_study in os.listdir(data_dir):
         for visit in os.listdir(os.path.join(data_dir, body_study)):
@@ -103,7 +105,7 @@ def extract_taxonomy(data_dir: str,
                 continue
 
             output_dir = os.path.join(output_dir_name, body_study, visit)
-            run_mothur(visit_dir, output_dir, reclassify=reclassify)
+            run_mothur(visit_dir, output_dir, reclassify=reclassify, rerun=rerun)
 
     print("Done creating mothur files.")
 
@@ -153,11 +155,11 @@ def idability(data_dir: str, code_visit: str = "visit1") -> None:
             print()
 
 if __name__ == "__main__":
-    app() # uncomment to use cli interface
+    # app() # uncomment to use cli interface
 
     # Run the app with completely new data
     # create files needed for download
-    # create("hmp_portal_files/feces_ibdmdb_fastq") # do not have visit 1 and visit 2 samples
+    # create("hmp_portal_files/feces_ibdmdb_fastq", 10) # do not have visit 1 and visit 2 samples
     # create("hmp_portal_files/feces_momspi_fastq")
     # create("hmp_portal_files/feces_t2d_fastq")
     # create("hmp_portal_files/vagina_momspi_fastq")
@@ -175,5 +177,5 @@ if __name__ == "__main__":
     # extract_taxonomy("data")
 
     # format taxonomy files
-    # postprocess("ifs_mothur_output","final_data_compare")
-    # idability("final_data/feces_momspi/rdp6","visit2")
+    postprocess("finished_data/raw_data/low_trim", "finished_data/final_data_low")
+    #idability("merge_data/rectum_buccal-muccosa_vagina/rdp6")

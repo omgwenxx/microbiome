@@ -1,8 +1,7 @@
-import pandas as pd
-import csv
-import pandas as pd
-import re
 import os
+import re
+
+import pandas as pd
 
 ROOT = "."
 
@@ -35,10 +34,15 @@ def get_visits(input_dir="./hmp_portal_files") -> None:
 
     metadata = get_metadata(input_dir)
 
+    # if metadata folder does not exist, make folder
+    if not os.path.exists(f"{ROOT}/metadata"):
+        os.mkdir(f"{ROOT}/metadata")
+
     # Count visits per sample and body_site
     visits_lists = metadata[["subject_id", "sample_body_site", "visit_number"]].groupby(
         ["subject_id", "sample_body_site"]).agg(list)
     visits_lists.to_csv(f"{ROOT}/metadata/visits.csv")
+    print("Save visit file to ", f"{ROOT}/metadata/visits.csv")
 
 
 def get_multiple_sites(input_dir="./hmp_portal_files") -> None:
@@ -48,6 +52,11 @@ def get_multiple_sites(input_dir="./hmp_portal_files") -> None:
     :return: 
     """
     metadata = get_metadata(input_dir)
+
+    # if metadata folder does not exist, make folder
+    if not os.path.exists(f"{ROOT}/metadata"):
+        os.mkdir(f"{ROOT}/metadata")
+
     # Get subjects with multiple body_sites in the first two visits
     vis12 = metadata[metadata["visit_number"] < 3]
     body_sites = vis12[["subject_id", "sample_body_site", "visit_number"]]
@@ -104,15 +113,12 @@ def print_ground_truth(dir, body_dir, rdp: str = "rdp6", visit: str = "visit1") 
         TN = subjects[~subjects.isin(subjects1)]
         print(f"Total of subjects in {file.split('-')[-1]}:", subjects.count())
         print(f"{body_dir} {file.split('-')[-1]} - TP {len(TP)} TN {len(TN)}\n")
-# possible call of get_ground_truth function
-# dir = "final_data"
-# for body_dir in os.listdir("final_data"):
-#    print_ground_truth(dir, body_dir)
 
 
 def print_non_zero_rows(file: str) -> None:
     """
     prints a dataframe with the non-zero rows of a file
+    this can only be run with postprocessed files
     :param file: path to file to be read in as DataFrame
     :return:
     """
@@ -124,16 +130,76 @@ def print_non_zero_rows(file: str) -> None:
         # Get the count of non-Zeros values in column
         count_of_non_zeros = (column != 0).sum()
         total += count_of_non_zeros
-
+    print(f"total {total} columns {len(df.columns)}")
     print("Average:", round(total / (len(df.columns) - 1)))
 
+
+def create_merge_bodysites_files(input_dir: str = "final_data"):
+    # check if file exists
+    if not os.path.exists(f"{ROOT}/metadata/multiple_sites.csv"):
+        get_multiple_sites()
+
+    multi_sites = pd.read_csv("metadata/multiple_sites.csv")
+    multi_sites = multi_sites[multi_sites["sample_body_site"] == "{'vagina', 'rectum', 'buccal mucosa'}"]
+    multi_sites_ids = multi_sites["subject_id"]
+
+    rdp6_df1 = pd.DataFrame(multi_sites["subject_id"])
+    rdp18_df1 = pd.DataFrame(multi_sites["subject_id"])
+    rdp6_df2 = pd.DataFrame(multi_sites["subject_id"])
+    rdp18_df2 = pd.DataFrame(multi_sites["subject_id"])
+
+    folder_names = ['rectum_momspi', 'buccal_mucosa_momspi', 'vagina_momspi']
+    for body_dir in os.listdir(input_dir):
+        if body_dir in folder_names:
+            print(f"\n{body_dir} ###########################")
+            for rdp in os.listdir(os.path.join(input_dir, body_dir)):
+                for file in os.listdir(os.path.join(input_dir, body_dir, rdp)):
+                    if file.endswith("visit1.pcl") or file.endswith("visit2.pcl"):
+                        filename = os.path.join(input_dir, body_dir, rdp, file)
+                        df = pd.read_csv(filename, sep="\t").transpose()  # transpose so rows are subjects
+
+                        df = df.reset_index()
+                        new_header = df.iloc[0]  # grab the first row for the header
+                        df = df[1:]  # take the data less the header row
+                        df.columns = new_header  # set the header row as the df header
+
+                        filtered_df = df[df["subject_id"].isin(multi_sites_ids)]
+                        print(filtered_df.shape)
+
+                        # add suffix of body_site except for subject_id
+                        keep_same = {'subject_id'}
+                        filtered_df.columns = ['{}{}'.format(c, '' if c in keep_same else f"{body_dir}") for c in
+                                               filtered_df.columns]
+
+                        if rdp == "rdp6" and file.endswith("visit1.pcl"):
+                            rdp6_df1 = pd.merge(rdp6_df1, filtered_df, on="subject_id")
+                        if rdp == "rdp18" and file.endswith("visit1.pcl"):
+                            rdp18_df1 = pd.merge(rdp18_df1, filtered_df, on="subject_id")
+                        if rdp == "rdp6" and file.endswith("visit2.pcl"):
+                            rdp6_df2 = pd.merge(rdp6_df2, filtered_df, on="subject_id")
+                        if rdp == "rdp18" and file.endswith("visit2.pcl"):
+                            rdp18_df2 = pd.merge(rdp18_df2, filtered_df, on="subject_id")
+
+    body_site = "rectum_buccal_muccosa_vagina"
+    output_dir = f"{ROOT}/merge_data/rectum_buccal-muccosa_vagina"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        os.makedirs(f"{output_dir}/rdp6")
+        os.makedirs(f"{output_dir}/rdp18")
+
+    rdp6_df1.transpose().to_csv(f"{output_dir}/rdp6/otus-{body_site}-rdp6-visit1.pcl", sep='\t', header=False)
+    rdp18_df1.transpose().to_csv(f"{output_dir}/rdp18/otus-{body_site}-rdp18-visit1.pcl", sep='\t', header=False)
+    rdp6_df2.transpose().to_csv(f"{output_dir}/rdp6/otus-{body_site}-rdp6-visit2.pcl", sep='\t', header=False)
+    rdp18_df2.transpose().to_csv(f"{output_dir}/rdp18/otus-{body_site}-rdp18-visit2.pcl", sep='\t', header=False)
+
+
 if __name__ == "__main__":
-    dir = "final_data"
-    for body_dir in os.listdir("final_data"):
+    ROOT = ".."
+    dir = f"{ROOT}/final_data_compare"
+    for body_dir in os.listdir(dir):
         print(f"\n{body_dir} ###########################")
         for rdp in os.listdir(os.path.join(dir, body_dir)):
             print(f"\nAverage non zero rows for {rdp}")
             for file in os.listdir(os.path.join(dir, body_dir, rdp)):
                 filepath = os.path.join(dir, body_dir, rdp, file)
                 print(file.split("-")[-1], end=" ")
-                print_non_zero_rows(filepath)

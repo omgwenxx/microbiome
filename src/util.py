@@ -1,5 +1,5 @@
-import os
 import gzip
+import os
 import shutil
 import zipfile
 
@@ -10,7 +10,8 @@ File containing utility functions for creating and modifing datasets
 
 def unpack_tar(body_folder: str) -> None:
     """
-    Unpacks the downloaded files to the data folder
+    Unpacks .tar files to the folder
+    :param body_folder: Folder with .tar files
     """
     for visit in os.listdir(body_folder):
         for file in os.listdir(os.path.join(body_folder, visit)):
@@ -23,7 +24,8 @@ def unpack_tar(body_folder: str) -> None:
 
 def unpack_gz(body_folder: str) -> None:
     """
-    Unpacks the downloaded files to the data folder
+    Unpacks .gz files to the folder
+    :param body_folder: Folder with .gz files
     """
     for visit in os.listdir(body_folder):
         for file in os.listdir(os.path.join(body_folder, visit)):

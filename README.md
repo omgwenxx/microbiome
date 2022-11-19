@@ -6,19 +6,18 @@ of 16s rRNA genes that affiliated with different operational taxonomic units (OT
 use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based codes
 in order to analyze personalized codes from microbiome data and evaluate the performance of re-identifying subjects.
 
+**Table of Contents**
 * [Installation](#installation)
   + [Linux](#linux)
-  + [Mothur setup](#mothur-setup)
-  * [Example of use](#example-of-use)
-    + [Create files for download and metadata](#create-files-for-download-and-metadata)
-    + [Download files](#download-files)
-    + [Decompress files](#decompress-files)
-    + [Clean files (optional)](#clean-files--optional-)
-    + [Extract Taxonomy](#extract-taxonomy)
-  * [Introduction](#introduction)
+  + [Windows](#windows)
+* [Example of use](#example-of-use)
+  + [Create files for download and metadata](#create-files-for-download-and-metadata)
+  + [Download files](#download-files)
+  + [Decompress files](#decompress-files)
+  + [Clean files (optional)](#clean-files--optional-)
+  + [Postprocess](#extract-taxonomy)
+  + [Idability](#mothur-setup)
     + [Evaluation](#evaluation)
-
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 
 ## Installation
@@ -33,12 +32,8 @@ You need to change parameters in the `src/mothur_files/mothur_config.json` if yo
 value to the path were mothur is installed. For example, if you have mothur installed in `/usr/local/bin/mothur-1.46.1`.
 This framework only supports mothur version 1.46.1.
 
-### Mothur setup
-We added the possibility to chnage two parameters in the mothur config file. These parameters are:
-- `processors`: number of processors to use, if you are using multiple processors and the programm crashes, 
-try running the command with processors=1, the more processors you use the more memory is required.
-- `cutoff`: Per default mothur uses to 80% confidence treshold `cutoff=80` which mirrors the original implementation in the Wang paper and the general approach to using 80% confidene in bootstrap values for phylogenetics
-f you set cutoff=0, classify.seqs will return a full taxonomy for every sequence, regardless of the bootstrap value for that taxonomic assignment.
+### Windows
+If you run the application on a Windows machine, the mothur version 1.46.1. is automatically download and extracted.
 
 ## Example of use
 
@@ -89,7 +84,7 @@ After creating the .tsv files that are needed for download, we can run the follo
 python main.py download <download_dir>
 ```
 
-Example use after previous example use command was run:
+Example use after previous example use command, the files with the download information are saved into folder `/download`:
 ```
 python main.py download download
 ```
@@ -123,6 +118,12 @@ python main.py decompress data
 
 **Again attention:** The files downloaded are quite big (up to 200-300 GB), make sure to have enough Disk Space.
 
+If files are not unzipped by the framework, you can unzip them manually by running the following shell commands:
+```
+for i in *.tar; do tar -xvf $i; done
+for i in *.gz; do gzip -vd $i; done
+```
+
 ### Clean files (optional)
 After decompressing, disk space can get quite full. Run this command to remove no longer needed .tar and .gz files.
 Be aware that if you did not run decompress before, you will delete the data that you downloaded.
@@ -137,23 +138,61 @@ python main.py clean data
 ```
 
 ### Extract Taxonomy
-We implemented the 
+We implemented the process as describes in the original HMP paper ([Supplementary Information](https://www.nature.com/articles/nature11234#Sec8), 16S data processing).
+However, there was not a one to one command for barcode correction, therefor we added the possibility to 
+adjust barcode mismatches (see [Mothur Setup](#mothur-setup)).
 
+#### Mothur setup
+We added the possibility to change two parameters in the mothur config file (`src/mothur_files/mothur_config.json`). These parameters are:
+- `processors`: number of processors to use, if you are using multiple processors and the programm crashes, 
+try running the command with `processors=1`, the more processors you use the more memory is required. It can increase the speed of the process
+but can also lead to out of memory errors during this step.
+- `cutoff`: Per default mothur uses to 80% confidence treshold `cutoff=80` which mirrors the original implementation in the Wang paper and the general approach to using 80% confidene in bootstrap values for phylogenetics
+f you set `cutoff=0`, classify.seqs will return a full taxonomy for every sequence, regardless of the bootstrap value for that taxonomic assignment.
+- `bdiff`: Per default mothur sets `bdiff=0` allowing 0 mismatches. To estimate
+a bar correction of 1.5, one can set bdiff to 2 (only integers allowed).
+
+The command for running mothur includes the following flags:
 ```
-python main.py extract-taxonomy <data_dir>
+python main.py extract-taxonomy <data_dir> <output_dir> --reclassify --rerun
 ```
+`rerun`: will rerun the entire application (otherwise folders that contain the processed files will be skipped).
+`reclassify`: will only rerun the classify.seqs step using existing files (otherwise will be skipped).
 
 Example use after previous example use command was run:
 ```
 python main.py extract-taxonomy data
 ```
+Per default the output directory will be `mothur_output`.
 
-## Introduction
+### Postprocess
+After extracting the taxonomy, the output of mothur is postprocessed to create a file that contains the relative abundance for each sample.
+```
+python main.py postprocess extract-taxonomy <data_dir> <output_dir>
+```
+
+Example use after previous example use command was run:
+```
+python main.py postprocess mothur_output
+```
+
+### Idability
 The paper ["Identifying personal microbiomes using metagenomic codes"](https://www.pnas.org/doi/10.1073/pnas.1423854112) by Franzosa et al. shows that using hitting sets based on
 metagenomic codes can be used to match samples to subjects. A hitting set is a set of metagenomic features which can uniquely
-identify a subject, in the paper also refered ti as metagenomic codes. 
+identify a subject, in the paper also refered to as metagenomic codes. This is done via the idability script. It automatically uses the first visit file, to create
+the genomic codes. The output is saved to `/idability_output` folder. The subfolder `codes` contains the genomic codes
+and the subfolder `eval` contains the idability output with the confusion matrix. For checking, we added True Negatives (TN)
+to the confusion matrix. The TN are samples that do not appear in the first visit.
+```
+python main.py idability <data_dir>
+```
 
-### Evaluation
+Example use after previous example use command was run:
+```
+python main.py idability final_data
+```
+
+#### Evaluation
 The original paper uses a confusion matrix where the classes can be identified as follows:
 - **True Positive (TP)**: A sample was correctly matched, meaning two different visits were matched to the same person.
 - **False Negative**: A previous extracted code does not match the same sample anymore.
@@ -164,3 +203,7 @@ Some public datasets provide different sample lists that only partly overlap inc
 to create the codes.
 
 ![img.png](img/eval.png) Source: "Identifying personal microbiomes using metagenomic codes" by Franzosa et al.
+
+## Processed Data
+The processed data that was obtained with this framework can be found in the `finished_data` folder. 
+A more detailed description can be found in the README.md file in the folder.

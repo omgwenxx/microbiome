@@ -1,8 +1,11 @@
-import portal_client
 import argparse
 import os
 
+import portal_client
+
 ROOT = "."
+
+
 def download_files(download_file: str, data_dir: str = f"{ROOT}/data") -> None:
     """
     This is a wrapper for using the portal_client code to download files from the portal.

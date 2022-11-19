@@ -1,8 +1,10 @@
-from src.util import *
-import os
 import json
-from mothur_py import Mothur
+import os
+
 import requests
+from mothur_py import Mothur
+
+from src.util import *
 
 ROOT = "."
 
@@ -53,8 +55,8 @@ def check_file(input_dir: str, file: str) -> bool:
 
 
 def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify: bool = False) -> None:
-    input_dir = os.path.join(ROOT,input_dir)
-    output_dir = os.path.join(ROOT,output_dir)
+    input_dir = os.path.join(ROOT, input_dir)
+    output_dir = os.path.join(ROOT, output_dir)
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -83,8 +85,10 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
                       mismatches=0,
                       processors=processors, inputdir=input_dir)
 
+    bdiff = config["bdiff"]
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
-        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=2, qaverage=25, inputdir=input_dir)
+        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=bdiff, qaverage=25,
+                    inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
         m.unique.seqs(fasta=f"{prefix}.trim.contigs.good.trim.fasta", inputdir=input_dir)
@@ -96,7 +100,8 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
     tax_dir = f"{ROOT}/src/mothur_files"
     cutoff = config["cutoff"]
     # assign their sequences to the taxonomy outline of rdp6 file (version 6)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or reclassify:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or (
+            reclassify or rerun):
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset6_032010.fa",
@@ -105,7 +110,7 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
                         processors=processors)
 
     # assign their sequences to the taxonomy outline of rdp6 file (version 18)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or reclassify:
+    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or (reclassify or rerun):
         m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
                         count=f"{prefix}.trim.contigs.good.trim.count_table",
                         template=f"{tax_dir}/trainset18_062020.rdp.fasta",

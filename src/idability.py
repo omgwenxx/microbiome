@@ -32,7 +32,11 @@ THE SOFTWARE.
 """
 
 from __future__ import print_function  # PYTHON 2.7+ REQUIRED
-import os, sys, argparse, csv
+
+import argparse
+import csv
+import os
+import sys
 
 # ---------------------------------------------------------------
 # description
@@ -267,7 +271,7 @@ def check_hits(sample_hits, sample_codes):
     sample_codes: dict of sample -> with corresponding code
     """
     counts = {k: 0 for k in "1|TP 3|FN+FP 2|TP+FP 4|FN 5|NA 6|TN".split()}
-    codes_samples = sample_codes.keys() # IDs of samples in code file
+    codes_samples = sample_codes.keys()  # IDs of samples in code file
     for sample, hits in sample_hits.items():
         # if there is no match we additionally check for TN
         if hits is None:
@@ -510,8 +514,8 @@ def run_idability(input_args):
         print("decoding the table:", table_path)
         sample_codes = read_codes(codes_path)
         sample_hits = decode_all(
-            sfv, # input file
-            sample_codes, # codes to compare
+            sfv,  # input file
+            sample_codes,  # codes to compare
             abund_detect=abund_detect,
         )
-        write_hits(sample_hits,sample_codes,output_path)
+        write_hits(sample_hits, sample_codes, output_path)
