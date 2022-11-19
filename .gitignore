@@ -201,4 +201,4 @@ taxonomy
 *.summary
 total_info.tsv
 Mothur.win.zip
-mothur
+src/mothur
