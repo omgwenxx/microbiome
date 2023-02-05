@@ -1,8 +1,8 @@
-# Microbiom Framework
+# Microbiome Framework
 
 This is a framework to download (using [portal_client](https://github.com/IGS/portal_client)) and process fastq files from [HMP Data Portal](https://portal.hmpdacc.org/) containing 
 16s rRNA raw sequence data. The framework uses [mothur](https://mothur.org/) to process the data and generate tables of counts of the number 
-of 16s rRNA genes that affiliated with different operational taxonomic units (OTUs). Lastly, we
+of 16s rRNA genes that are affiliated with different operational taxonomic units (OTUs). Lastly, we
 use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based codes
 in order to analyze personalized codes from microbiome data and evaluate the performance of re-identifying subjects.
 
