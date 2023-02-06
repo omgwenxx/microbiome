@@ -88,7 +88,7 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
 
 @app.command()
 def extract_taxonomy(data_dir: str,
-                     output_dir_name: Optional[str] = typer.Argument("mothur_output", help='Folder to store taxonomy files'),
+                     output_dir_name: str = "mothur_output",
                      rerun: bool = typer.Option(False, help="Reruns the whole process of creating files"),
                      reclassify: bool = typer.Option(False, help="Reruns classification only")) -> None:
     if not os.path.exists(output_dir_name):
@@ -117,6 +117,7 @@ def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='
     Postprocesses all body site data folders.
     :return:
     """
+    output_dir = "final_data"
     reformat_taxonomy(data_dir)
     unify_files(output_dir)
 
@@ -155,7 +156,7 @@ def idability(data_dir: str, code_visit: str = "visit1") -> None:
             print()
 
 if __name__ == "__main__":
-    # app() # uncomment to use cli interface
+    app() # uncomment to use cli interface
 
     # Run the app with completely new data
     # create files needed for download
@@ -174,8 +175,9 @@ if __name__ == "__main__":
     # clean("data")
 
     # run mothur code
-    # extract_taxonomy("data")
+    # extract_taxonomy("data", reclassify=True)
 
     # format taxonomy files
-    postprocess("finished_data/raw_data/low_trim", "finished_data/final_data_low")
+    # postprocess("mothur_output")
+    # postprocess("finished_data/raw_data/low_trim", "finished_data/final_data_low")
     #idability("merge_data/rectum_buccal-muccosa_vagina/rdp6")
