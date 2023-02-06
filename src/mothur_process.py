@@ -79,15 +79,15 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
     if not check_file(input_dir, f"{prefix}.trim.contigs.fasta") or rerun:
         m.make.contigs(file=f"{prefix}.files", processors=processors, inputdir=input_dir)
 
+    mismatch = config["mismatch"]
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.fasta") or rerun:
         m.screen.seqs(fasta=f"{prefix}.trim.contigs.fasta", contigsreport=f"{prefix}.contigs.report",
                       group=f"{prefix}.contigs.groups", maxambig=0, maxhomop=6, minlength=200, maxlength=1000,
-                      mismatches=0,
+                      mismatches=mismatch,
                       processors=processors, inputdir=input_dir)
 
-    bdiff = config["bdiff"]
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
-        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=bdiff, qaverage=25,
+        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=mismatch, qaverage=25,
                     inputdir=input_dir)
 
     if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
@@ -126,6 +126,8 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
     if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary"):
         m.rename.file(input=f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary", new="final.rdp18.summary",
                       inputdir=input_dir, outputdir=output_dir)
+
+    print(f"Done processing with {mismatch} mismatches")
 
 
 if __name__ == "__main__":
