@@ -40,7 +40,8 @@ If you run the application on a Windows machine, the mothur version 1.46.1. is a
 ### Create files for download and metadata
 Through [HMP Data Portal](https://portal.hmpdacc.org/) two files can be generated: a file with download information and one with metadata of the samples. To download the files needed to work with this framework following steps should be followed:
 This framework only works with **paired-end reads of 16S rRNA sequences** provided in a `.fastq` format.
-1.Visit the [portal website](https://portal.hmpdacc.org/) and click Data to get to
+
+1. Visit the [portal website](https://portal.hmpdacc.org/) and click Data to get to
 the samples dashboard
 2. Filter files in Files Tab View:
     - Format: FASTQ
