@@ -88,7 +88,7 @@ def clean(data_dir: str = typer.Argument(..., help='Folder with downloaded files
 
 @app.command()
 def extract_taxonomy(data_dir: str,
-                     output_dir_name: str = "mothur_output",
+                     output_dir_name: Optional[str] = typer.Argument("mothur_output", help='Folder to store taxonomy files'),
                      rerun: bool = typer.Option(False, help="Reruns the whole process of creating files"),
                      reclassify: bool = typer.Option(False, help="Reruns classification only")) -> None:
     if not os.path.exists(output_dir_name):
