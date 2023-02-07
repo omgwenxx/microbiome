@@ -117,7 +117,6 @@ def postprocess(data_dir: Optional[str] = typer.Argument("mothur_output", help='
     Postprocesses all body site data folders.
     :return:
     """
-    output_dir = "final_data"
     reformat_taxonomy(data_dir)
     unify_files(output_dir)
 
