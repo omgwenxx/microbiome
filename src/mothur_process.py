@@ -79,57 +79,55 @@ def run_mothur(input_dir: str, output_dir: str, rerun: bool = False, reclassify:
     if not check_file(input_dir, f"{prefix}.trim.contigs.fasta") or rerun:
         m.make.contigs(file=f"{prefix}.files", processors=processors, inputdir=input_dir)
 
-    mismatch = config["mismatch"]
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.fasta") or rerun:
-        m.screen.seqs(fasta=f"{prefix}.trim.contigs.fasta", contigsreport=f"{prefix}.contigs.report",
-                      group=f"{prefix}.contigs.groups", maxambig=0, maxhomop=6, minlength=200, maxlength=1000,
-                      mismatches=mismatch,
-                      processors=processors, inputdir=input_dir)
+    # Franzosa paper has the following filtering options:
+    # (x) rejecting reads <200nt and >1000nt (minlegth=200,maxlength=1000)
+    # (x) excluding homopolymer runs >6nt (maxhomop=6), accepting <=1.5 barcode correction (bdiff=2)
+    # (x) 0 primer mismatches (pdiff = 0) and 0 ambiguous bases (maxambig = 0)
+    # (x) a minimum average quality of 25 (qaverage=25)
+    if not check_file(input_dir, f"{prefix}.trim.contigs.trim.fasta") or rerun:
+        m.trim.seqs(fasta=f"{prefix}.trim.contigs.fasta", processors=processors, minlength=200, maxlength=1000,
+                    maxhomop=6, bdiffs=2, pdiffs=0, maxambig=0, qaverage=25, inputdir=input_dir)
 
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.fasta") or rerun:
-        m.trim.seqs(fasta=f"{prefix}.trim.contigs.good.fasta", processors=processors, bdiff=mismatch, qaverage=25,
-                    inputdir=input_dir)
+    if not check_file(input_dir, f"{prefix}.trim.contigs.trim.unique.fasta") or rerun:
+        m.unique.seqs(fasta=f"{prefix}.trim.contigs.trim.fasta", inputdir=input_dir)
 
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.fasta") or rerun:
-        m.unique.seqs(fasta=f"{prefix}.trim.contigs.good.trim.fasta", inputdir=input_dir)
-
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.count_table") or rerun:
-        m.count.seqs(name=f"{prefix}.trim.contigs.good.trim.names", group=f"{prefix}.contigs.good.groups",
+    if not check_file(input_dir, f"{prefix}.trim.contigs.trim.count_table") or rerun:
+        m.count.seqs(name=f"{prefix}.trim.contigs.trim.names", group=f"{prefix}.contigs.groups",
                      inputdir=input_dir)
 
     tax_dir = f"{ROOT}/src/mothur_files"
     cutoff = config["cutoff"]
     # assign their sequences to the taxonomy outline of rdp6 file (version 6)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.taxonomy") or (
+    if not check_file(input_dir, f"{prefix}.trim.contigs.trim.unique.trainset6_032010.wang.taxonomy") or (
             reclassify or rerun):
-        m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
-                        count=f"{prefix}.trim.contigs.good.trim.count_table",
+        m.classify.seqs(fasta=f"{prefix}.trim.contigs.trim.unique.fasta",
+                        count=f"{prefix}.trim.contigs.trim.count_table",
                         template=f"{tax_dir}/trainset6_032010.fa",
                         taxonomy=f"{tax_dir}/trainset6_032010.tax",
                         output="simple", inputdir=input_dir, cutoff=cutoff,
                         processors=processors)
 
     # assign their sequences to the taxonomy outline of rdp6 file (version 18)
-    if not check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.taxonomy") or (reclassify or rerun):
-        m.classify.seqs(fasta=f"{prefix}.trim.contigs.good.trim.unique.fasta",
-                        count=f"{prefix}.trim.contigs.good.trim.count_table",
+    if not check_file(input_dir, f"{prefix}.trim.contigs.trim.unique.rdp.wang.taxonomy") or (reclassify or rerun):
+        m.classify.seqs(fasta=f"{prefix}.trim.contigs.trim.unique.fasta",
+                        count=f"{prefix}.trim.contigs.trim.count_table",
                         template=f"{tax_dir}/trainset18_062020.rdp.fasta",
                         taxonomy=f"{tax_dir}/trainset18_062020.rdp.tax",
                         output="simple", inputdir=input_dir, cutoff=cutoff,
                         processors=processors)
 
-    if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary"):
-        m.rename.file(input=f"{prefix}.trim.contigs.good.trim.unique.trainset6_032010.wang.tax.summary",
+    if check_file(input_dir, f"{prefix}.trim.contigs.trim.unique.trainset6_032010.wang.tax.summary"):
+        m.rename.file(input=f"{prefix}.trim.contigs.trim.unique.trainset6_032010.wang.tax.summary",
                       new="final.rdp6.summary",
                       inputdir=input_dir, outputdir=output_dir)
 
-    if check_file(input_dir, f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary"):
-        m.rename.file(input=f"{prefix}.trim.contigs.good.trim.unique.rdp.wang.tax.summary", new="final.rdp18.summary",
+    if check_file(input_dir, f"{prefix}.trim.contigs.trim.unique.rdp.wang.tax.summary"):
+        m.rename.file(input=f"{prefix}.trim.contigs.trim.unique.rdp.wang.tax.summary", new="final.rdp18.summary",
                       inputdir=input_dir, outputdir=output_dir)
 
-    print(f"Done processing with {mismatch} mismatches")
+    print(f"Done processing with {cutoff} cutoff")
 
 
 if __name__ == "__main__":
     ROOT = ".."
-    run_mothur("data/rectum_momspi/visit2", "mothur_output/rectum_momspi/visit2")
+    run_mothur("data/vagina_momspi/visit1", "mothur_output/vagina_momspi/visit1")
