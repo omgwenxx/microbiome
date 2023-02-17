@@ -216,5 +216,5 @@ to create the codes.
 ![img.png](img/eval.png) Source: "Identifying personal microbiomes using metagenomic codes" by Franzosa et al.
 
 ## Processed Data
-The processed data that was obtained with this framework can be found in the `finished_data` folder. 
+The processed data that was obtained with this framework can be found in the `processed_data` folder. 
 A more detailed description can be found in the README.md file in the folder.
