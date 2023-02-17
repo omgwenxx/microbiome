@@ -15,8 +15,9 @@ in order to analyze personalized codes from microbiome data and evaluate the per
   + [Download files](#download-files)
   + [Decompress files](#decompress-files)
   + [Clean files (optional)](#clean-files-optional)
-  + [Postprocess](#extract-taxonomy)
-  + [Idability](#mothur-setup)
+  + [Extract Taxononmy](#extract-taxonomy)
+  + [Postprocess](#postprocess)
+  + [Metagenomic Codes](#metagenomic-codes)
     + [Evaluation](#evaluation)
 
 
@@ -185,7 +186,7 @@ python main.py postprocess mothur_output
 
 After running this step, final files will be saved to `\final_data` per default.
 
-### Idability
+### Metagenomic Codes
 The paper ["Identifying personal microbiomes using metagenomic codes"](https://www.pnas.org/doi/10.1073/pnas.1423854112) by Franzosa et al. shows that using hitting sets based on
 metagenomic codes can be used to match samples to subjects. A hitting set is a set of metagenomic features which can uniquely
 identify a subject, in the paper also refered to as metagenomic codes. This is done via the idability script. It automatically uses the first visit file, to create
