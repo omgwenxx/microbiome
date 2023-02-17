@@ -17,7 +17,9 @@ data
     |   ...
 ```
 
-We are providing different formats for experiments:
-- `final_data`: Extracted taxonomies for each body site and using rdp6 and rdp18 taxomies for classifications. Files contain all samples that were provided (not only visits that appear in all visits). Those files were created using the high-trim data with a cutoff of 80.
+We are providing different formats for analyzing:
+- `final_data`: Extracted taxonomies for each body site and using rdp6 and rdp18 taxonomies for classifications. Files contain all samples that were provided (not only visits that appear in all visits). Those files were created using the high-trim pipeline with a cutoff of 80.
+- `final_data_high`: Same as `final_data` but with a cutoff of 0.
 - `double_visits`: Compared to the `final_data` folder this folder only contains files with samples that are present in the first visit and a consecutive second visit. This is equal to the files that were used in the Franzosa et al. paper.
-- `low_trim_data`
+- `mismatch_data`: Taxonomies with all filter options that were specified by Franzosa et al., using both rdp6 and rdp18 taxonomies for classifications.
+- `raw_data`: Containing unprocessed mothur output of the low trim, high trim and mismatch data.
