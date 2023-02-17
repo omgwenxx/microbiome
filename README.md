@@ -1,9 +1,9 @@
 # Microbiome Framework
 
-This is a framework to download (using [portal_client](https://github.com/IGS/portal_client)) and process fastq files from [HMP Data Portal](https://portal.hmpdacc.org/) containing 
-16s rRNA raw sequence data. The framework uses [mothur](https://mothur.org/) to process the data and generate tables of counts of the number 
+This is a framework to download fastq files (using [portal_client](https://github.com/IGS/portal_client)) from [HMP Data Portal](https://portal.hmpdacc.org/) containing 
+16s rRNA raw sequence data and then process them. The framework uses [mothur](https://mothur.org/) to process the data and generate tables of counts of the number 
 of 16s rRNA genes that are affiliated with different operational taxonomic units (OTUs). Lastly, we
-use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based codes
+use [idability](http://huttenhower.sph.harvard.edu/idability) to build and evaluate hitting-set-based metagenomic codes
 in order to analyze personalized codes from microbiome data and evaluate the performance of re-identifying subjects.
 
 **Table of Contents**
@@ -14,7 +14,7 @@ in order to analyze personalized codes from microbiome data and evaluate the per
   + [Create files for download and metadata](#create-files-for-download-and-metadata)
   + [Download files](#download-files)
   + [Decompress files](#decompress-files)
-  + [Clean files (optional)](#clean-files--optional-)
+  + [Clean files (optional)](#clean-files-optional)
   + [Postprocess](#extract-taxonomy)
   + [Idability](#mothur-setup)
     + [Evaluation](#evaluation)
@@ -29,8 +29,8 @@ pip install -r requirements.txt
 
 ### Linux
 You need to change parameters in the `src/mothur_files/mothur_config.json` if you are using Linux. Change the `linux_path` 
-value to the path were mothur is installed. For example, if you have mothur installed in `/usr/local/bin/mothur-1.46.1`.
-This framework only supports mothur version 1.46.1.
+value to the path were mothur is installed. For example, if you have mothur installed in `/usr/local/bin/mothur-1.46.1`, this is 
+the value that you should store. This framework only supports mothur version 1.46.1.
 
 ### Windows
 If you run the application on a Windows machine, the mothur version 1.46.1. is automatically download and extracted.
@@ -39,7 +39,7 @@ If you run the application on a Windows machine, the mothur version 1.46.1. is a
 
 ### Create files for download and metadata
 Through [HMP Data Portal](https://portal.hmpdacc.org/) two files can be generated: a file with download information and one with metadata of the samples. To download the files needed to work with this framework following steps should be followed:
-This framework only works with **paired-end reads of 16S rRNA sequences** provided in a `.fastq` format.
+This framework was only tested with **paired-end reads of 16S rRNA sequences** provided in a `.fastq` format.
 
 1. Visit the [portal website](https://portal.hmpdacc.org/) and click Data to get to
 the samples dashboard
@@ -59,7 +59,7 @@ the samples dashboard
 
     ![img_1.png](img/download_button_img.png)
 
-Using the following command, the files for later download and metadata files are created:
+Then save both files into one folder `input_dir` and use the following command so the files for later download and metadata files are created:
 ```
 python main.py create <input_dir>
 ```
@@ -68,16 +68,16 @@ Example use:
 python main.py create hmp_portal_files/feces_moms-pi_fastq
 ```
 
-Per default the files for download are created for the first two visits. To increase the number of visits
+Per default the files for download are created for the first two visits. To increase the number of visits use the `--num-visits` flag.
 ```
-python main.py create <input_dir> <num_visits>
+python main.py create <input_dir> --num-visits <num_visits>
 ```
 
 Example use:
 ```
 python main.py create hmp_portal_files/feces_moms-pi_fastq --num-visits 5
 ```
-This command will create all files needed to download the first 5 visits of the feces samples of the moms-pi study.
+This command will create all files needed to download the first 5 visits of the feces samples of the moms-pi study. Per default, the folder with the files for download is called `download` and the folder with metadata of the samples is called `metadata`.
 
 
 ### Download files
@@ -105,10 +105,19 @@ data
     |   file3.tar
 ```
 
-**Attention:** The files downloaded are quite big depending on the amount of samples (up to 30GB only in the compressed state or even more). Make sure to have enough Disk Space.
+**Attention:** The files downloaded are quite big depending on the amount of samples (up to 30GB only in the compressed state or even more). Make sure to have enough disk space.
+
+**Tip**: To run commands in the background use the `nohup` command in combination with `&`. The output is then rediredted to a file `nohup.out`. We recommend redirected the output of different processes to different files to inspect errors.
+```
+nohup python main.py download download &
+```
+or
+```
+nohup python main.py download download > download_output.txt &
+```
 
 ### Decompress files
-After downloading, all files are compressed as .gz files and the .tar files. To decompress all downloaded files run:
+After downloading, all files are double compressed as .gz files in .tar files. To decompress all downloaded files run:
 ```
 python main.py decompress <data_dir>
 ```
@@ -118,7 +127,7 @@ Example use after previous example use command was run:
 python main.py decompress data
 ```
 
-**Again attention:** The files downloaded are quite big (up to 200-300 GB), make sure to have enough Disk Space.
+**Again attention:** The files downloaded are quite big (up to 200-300 GB), make sure to have enough disk space.
 
 If files are not unzipped by the framework, you can unzip them manually by running the following shell commands:
 ```
@@ -141,8 +150,6 @@ python main.py clean data
 
 ### Extract Taxonomy
 We implemented the process as describes in the original HMP paper ([Supplementary Information](https://www.nature.com/articles/nature11234#Sec8), 16S data processing).
-However, there was not a one to one command for barcode correction, therefor we added the possibility to 
-adjust barcode mismatches (see [Mothur Setup](#mothur-setup)).
 
 #### Mothur setup
 We added the possibility to change two parameters in the mothur config file (`src/mothur_files/mothur_config.json`). These parameters are:
@@ -151,15 +158,13 @@ try running the command with `processors=1`, the more processors you use the mor
 but can also lead to out of memory errors during this step.
 - `cutoff`: Per default mothur uses to 80% confidence treshold `cutoff=80` which mirrors the original implementation in the Wang paper and the general approach to using 80% confidene in bootstrap values for phylogenetics
 f you set `cutoff=0`, classify.seqs will return a full taxonomy for every sequence, regardless of the bootstrap value for that taxonomic assignment.
-- `bdiff`: Per default mothur sets `bdiff=0` allowing 0 mismatches. To estimate
-a bar correction of 1.5, one can set bdiff to 2 (only integers allowed).
 
 The command for running mothur includes the following flags:
 ```
 python main.py extract-taxonomy <data_dir> <output_dir> --reclassify --rerun
 ```
 `rerun`: will rerun the entire application (otherwise folders that contain the processed files will be skipped).
-`reclassify`: will only rerun the classify.seqs step using existing files (otherwise will be skipped).
+`reclassify`: will only rerun the `classify.seqs` step using existing files (otherwise will be skipped).
 
 Example use after previous example use command was run:
 ```
@@ -177,6 +182,8 @@ Example use after previous example use command was run:
 ```
 python main.py postprocess mothur_output
 ```
+
+After running this step, final files will be saved to `\final_data` per default.
 
 ### Idability
 The paper ["Identifying personal microbiomes using metagenomic codes"](https://www.pnas.org/doi/10.1073/pnas.1423854112) by Franzosa et al. shows that using hitting sets based on
