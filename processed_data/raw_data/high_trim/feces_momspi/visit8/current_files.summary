@@ -1,0 +1,9 @@
+accnos=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.trim.contigs.good.trim.unique.rdp.wang.flip.accnos
+fasta=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.trim.contigs.good.trim.unique.fasta
+group=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.contigs.good.groups
+name=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.trim.contigs.good.trim.names
+taxonomy=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.trim.contigs.good.trim.unique.rdp.wang.taxonomy
+contigsreport=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.contigs.report
+count=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.trim.contigs.good.trim.count_table
+processors=8
+file=/home/rippberger/microbiom/data/feces_momspi/visit8/stability.files

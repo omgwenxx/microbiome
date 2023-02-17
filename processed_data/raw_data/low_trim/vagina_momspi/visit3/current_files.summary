@@ -1,0 +1,5 @@
+accnos=/home/rippberger/microbiom/data/vagina_momspi/visit3/stability.trim.contigs.good.trim.unique.rdp.wang.flip.accnos
+fasta=/home/rippberger/microbiom/data/vagina_momspi/visit3/stability.trim.contigs.good.trim.unique.fasta
+taxonomy=/home/rippberger/microbiom/data/vagina_momspi/visit3/stability.trim.contigs.good.trim.unique.rdp.wang.taxonomy
+count=/home/rippberger/microbiom/data/vagina_momspi/visit3/stability.trim.contigs.good.trim.count_table
+processors=8
